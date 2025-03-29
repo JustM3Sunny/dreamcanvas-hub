@@ -4,19 +4,21 @@ import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Sparkles } from 'lucide-react';
-import { generateImage, enhancePrompt, GeneratedImage } from '../services/imageService';
+import { Loader2, Sparkles, Zap } from 'lucide-react';
+import { generateImage, enhancePrompt, enhancedImageGeneration, GeneratedImage } from '../services/imageService';
 import { toast } from 'sonner';
 import Navbar from '../components/Navbar';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const { currentUser } = useAuth();
   const [prompt, setPrompt] = useState('');
-  const [style, setStyle] = useState('photographic');
+  const [style, setStyle] = useState('photorealistic');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<GeneratedImage | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [qualityLevel, setQualityLevel] = useState('high');
   
   const handleEnhancePrompt = async () => {
     if (!prompt.trim()) {
@@ -36,7 +38,7 @@ const Index = () => {
     }
   };
   
-  const handleGenerateImage = async () => {
+  const handleGenerateImage = async (useEnhanced = false) => {
     if (!prompt.trim()) {
       toast.error('Please enter a prompt first');
       return;
@@ -49,9 +51,20 @@ const Index = () => {
     
     setIsGenerating(true);
     try {
-      const image = await generateImage(prompt, style, aspectRatio, currentUser.uid);
+      let image;
+      
+      if (useEnhanced) {
+        image = await enhancedImageGeneration(prompt, currentUser.uid, {
+          quality: qualityLevel as "standard" | "high" | "ultra-high" | "max",
+          aspectRatio,
+          style,
+          detailLevel: "16k"
+        });
+      } else {
+        image = await generateImage(prompt, style, aspectRatio, currentUser.uid);
+      }
+      
       setGeneratedImage(image);
-      toast.success('Image generated successfully!');
     } catch (error) {
       console.error('Error generating image:', error);
       toast.error('Failed to generate image');
@@ -74,7 +87,7 @@ const Index = () => {
             </h1>
             <p className="text-gray-300 md:text-lg max-w-3xl mx-auto mb-12">
               Experience the power of AI-driven image generation. Create beautiful, unique visuals
-              from your descriptions in seconds.
+              from your descriptions in seconds with our state-of-the-art FLUX technology.
             </p>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
@@ -118,7 +131,7 @@ const Index = () => {
                         <SelectValue placeholder="Select style" />
                       </SelectTrigger>
                       <SelectContent className="bg-imaginexus-darker border-gray-800">
-                        <SelectItem value="photographic">Photographic</SelectItem>
+                        <SelectItem value="photorealistic">Photorealistic</SelectItem>
                         <SelectItem value="digital-art">Digital Art</SelectItem>
                         <SelectItem value="illustration">Illustration</SelectItem>
                         <SelectItem value="3d-render">3D Render</SelectItem>
@@ -168,18 +181,55 @@ const Index = () => {
                   </div>
                 </div>
                 
-                <Button 
-                  onClick={handleGenerateImage}
-                  disabled={isGenerating || !prompt.trim()}
-                  className="w-full gradient-btn text-white py-6 rounded-md"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : "Generate Image"}
-                </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Quality Level</label>
+                    <Select value={qualityLevel} onValueChange={setQualityLevel}>
+                      <SelectTrigger className="bg-imaginexus-darker border-gray-800 text-white">
+                        <SelectValue placeholder="Select quality" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-imaginexus-darker border-gray-800">
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="ultra-high">Ultra High</SelectItem>
+                        <SelectItem value="max">Maximum</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-4">
+                  <Button 
+                    onClick={() => handleGenerateImage(false)}
+                    disabled={isGenerating || !prompt.trim()}
+                    className="flex-1 gradient-btn text-white py-6 rounded-md"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : "Generate Image"}
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => handleGenerateImage(true)}
+                    disabled={isGenerating || !prompt.trim()}
+                    className="flex-1 bg-imaginexus-accent2 hover:bg-imaginexus-accent2/90 text-white py-6 rounded-md"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="mr-2 h-4 w-4" />
+                        Enhanced Generate
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
               
               <div className="flex items-center justify-center bg-imaginexus-darker rounded-md p-4 min-h-[350px] border border-gray-800">
@@ -203,6 +253,63 @@ const Index = () => {
                     <p className="text-gray-500">Your generated image will appear here</p>
                   </div>
                 )}
+              </div>
+            </div>
+            
+            {/* Quick Gallery Preview */}
+            <div className="mt-16">
+              <h2 className="text-2xl font-bold text-white mb-6">Your Recent Creations</h2>
+              
+              <div className="flex flex-wrap gap-4 justify-center mb-8">
+                {[1, 2, 3, 4].map((item) => (
+                  <div 
+                    key={item}
+                    className="w-48 h-48 bg-imaginexus-darker rounded-md overflow-hidden flex items-center justify-center border border-gray-800 hover:border-imaginexus-accent1 transition-all"
+                  >
+                    <svg 
+                      className="w-12 h-12 text-gray-700" 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                ))}
+              </div>
+              
+              <Link to="/gallery">
+                <Button className="bg-transparent border border-imaginexus-accent1 text-white hover:bg-imaginexus-accent1/20">
+                  View Full Gallery
+                </Button>
+              </Link>
+            </div>
+            
+            {/* Technology Overview */}
+            <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800">
+                <h3 className="text-xl font-bold text-white mb-3">State-of-the-Art AI</h3>
+                <p className="text-gray-400">
+                  Our platform uses cutting-edge FLUX AI technology to generate stunning, high-resolution 
+                  images from text descriptions with remarkable accuracy.
+                </p>
+              </div>
+              
+              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800">
+                <h3 className="text-xl font-bold text-white mb-3">Versatile Styles</h3>
+                <p className="text-gray-400">
+                  Choose from multiple artistic styles including photorealistic renders, digital art, 
+                  illustrations, 3D renders, pixel art and anime.
+                </p>
+              </div>
+              
+              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800">
+                <h3 className="text-xl font-bold text-white mb-3">Prompt Engineering</h3>
+                <p className="text-gray-400">
+                  Our smart prompt enhancer helps you create the perfect text description to get 
+                  exactly the image you're imagining.
+                </p>
               </div>
             </div>
           </div>
