@@ -128,4 +128,4 @@ const ApiPage = () => {
   );
 };
 
-export default Api;
+export default ApiPage;
