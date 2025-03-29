@@ -64,7 +64,7 @@ const IMAGE_TIERS = {
 
 // Initialize Gemini AI
 const initGemini = () => {
-  const API_KEY = process.env.VITE_GEMINI_API_KEY || localStorage.getItem("GEMINI_API_KEY");
+  const API_KEY = process.env.VITE_GEMINI_API_KEY || "AIzaSyDc7u7wTVdDG3zP18xnELKs0HX7-hImkmc" || localStorage.getItem("GEMINI_API_KEY");
   if (!API_KEY) return null;
   
   try {
