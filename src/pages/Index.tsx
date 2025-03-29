@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,8 @@ import {
   enhancedImageGeneration, 
   GeneratedImage,
   getUserSubscription,
-  getLatestUserImages
+  getLatestUserImages,
+  UserLimit
 } from '../services/imageService';
 import { toast } from 'sonner';
 import Navbar from '../components/Navbar';
@@ -30,19 +30,16 @@ const Index = () => {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [qualityLevel, setQualityLevel] = useState('high');
   const [recentImages, setRecentImages] = useState<GeneratedImage[]>([]);
-  const [userSubscription, setUserSubscription] = useState<any>(null);
+  const [userSubscription, setUserSubscription] = useState<UserLimit | null>(null);
   const [activeTab, setActiveTab] = useState('text-to-image');
   
-  // Fetch user subscription details and recent images
   useEffect(() => {
     async function loadUserData() {
       if (currentUser) {
         try {
-          // Get user subscription details
           const subscription = await getUserSubscription(currentUser.uid);
           setUserSubscription(subscription);
           
-          // Get recent images
           const images = await getLatestUserImages(currentUser.uid, 4);
           setRecentImages(images);
         } catch (error) {
@@ -100,11 +97,9 @@ const Index = () => {
       
       setGeneratedImage(image);
       
-      // Refresh recent images
       const images = await getLatestUserImages(currentUser.uid, 4);
       setRecentImages(images);
       
-      // Refresh user subscription to update usage count
       const subscription = await getUserSubscription(currentUser.uid);
       setUserSubscription(subscription);
       
@@ -126,7 +121,6 @@ const Index = () => {
       userId: currentUser?.uid || ''
     });
     
-    // Switch to text-to-image tab and set the analyzed prompt
     setActiveTab('text-to-image');
     setPrompt(analyzedPrompt);
   };
@@ -166,10 +160,9 @@ const Index = () => {
             </p>
             
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
-              {/* Side panel with subscription info (on large screens) */}
               <div className="hidden lg:block lg:col-span-1">
                 {currentUser && userSubscription ? (
-                  <SubscriptionInfo userSubscription={userSubscription} />
+                  <SubscriptionInfo userLimit={userSubscription} />
                 ) : (
                   <div className="bg-imaginexus-darker rounded-lg border border-gray-800 p-4 text-center">
                     <h3 className="text-white font-medium mb-2">Sign in to get started</h3>
@@ -202,7 +195,6 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Main content area */}
               <div className="lg:col-span-4">
                 <Tabs 
                   defaultValue="text-to-image" 
@@ -219,7 +211,6 @@ const Index = () => {
                     </TabsTrigger>
                   </TabsList>
                   
-                  {/* Text-to-Image Tab */}
                   <TabsContent value="text-to-image">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <div className="space-y-6">
@@ -328,10 +319,9 @@ const Index = () => {
                           </div>
                         </div>
                         
-                        {/* Mobile subscription info */}
                         {currentUser && userSubscription && (
                           <div className="lg:hidden mb-4">
-                            <SubscriptionInfo userSubscription={userSubscription} />
+                            <SubscriptionInfo userLimit={userSubscription} />
                           </div>
                         )}
                         
@@ -396,7 +386,6 @@ const Index = () => {
                     </div>
                   </TabsContent>
                   
-                  {/* Image-to-Image Tab */}
                   <TabsContent value="image-to-image">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <div className="space-y-4">
@@ -409,10 +398,9 @@ const Index = () => {
                           <ImageUploader onImageGenerated={handleImageUploadGeneration} />
                         </div>
                         
-                        {/* Mobile subscription info for image-to-image tab */}
                         {currentUser && userSubscription && (
                           <div className="lg:hidden">
-                            <SubscriptionInfo userSubscription={userSubscription} />
+                            <SubscriptionInfo userLimit={userSubscription} />
                           </div>
                         )}
                       </div>
@@ -439,7 +427,6 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Quick Gallery Preview */}
             <div className="mt-16">
               <h2 className="text-2xl font-bold text-white mb-6">Your Recent Creations</h2>
               
@@ -484,7 +471,6 @@ const Index = () => {
               </Link>
             </div>
             
-            {/* Technology Overview */}
             <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
               <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800">
                 <h3 className="text-xl font-bold text-white mb-3">State-of-the-Art AI</h3>
