@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { LogOut, User as UserIcon } from 'lucide-react';
+import { LogOut, User as UserIcon, Settings } from 'lucide-react';
 
 const Navbar = () => {
   const { currentUser, signInWithGoogle, signOut } = useAuth();
@@ -43,7 +43,7 @@ const Navbar = () => {
               </linearGradient>
             </defs>
           </svg>
-          <span className="text-white text-lg font-semibold">ImagiNexus</span>
+          <span className="text-white text-lg font-semibold">Imagicaaa</span>
         </Link>
         
         <nav className="hidden md:flex items-center space-x-8">
@@ -55,6 +55,9 @@ const Navbar = () => {
           </Link>
           <Link to="/api" className="text-white hover:text-imaginexus-accent1 transition-colors">
             API
+          </Link>
+          <Link to="/styles" className="text-white hover:text-imaginexus-accent1 transition-colors">
+            Styles
           </Link>
           
           {currentUser ? (
@@ -74,6 +77,11 @@ const Navbar = () => {
                   <UserIcon className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800 cursor-pointer" onClick={() => {}}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-gray-800" />
                 <DropdownMenuItem className="text-white hover:bg-gray-800 cursor-pointer" onClick={signOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>

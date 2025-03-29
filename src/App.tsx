@@ -10,6 +10,8 @@ import Gallery from "./pages/Gallery";
 import Pricing from "./pages/Pricing";
 import ApiPage from "./pages/Api";
 import NotFound from "./pages/NotFound";
+import Styles from "./pages/Styles";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/api" element={<ApiPage />} />
+            <Route path="/styles" element={<Styles />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
