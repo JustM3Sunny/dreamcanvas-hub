@@ -54,7 +54,7 @@ const STYLE_EXAMPLES = [
   },
   {
     name: 'Ghibli',
-    description: 'Artwork inspired by Studio Ghibli's distinctive animation style',
+    description: "Artwork inspired by Studio Ghibli's distinctive animation style",
     tier: 'PRO',
     imageUrl: 'https://images.unsplash.com/photo-1638272181967-78d9f9b3b3e6',
     examples: ['Ghibli landscapes', 'Ghibli characters', 'Whimsical scenes']
