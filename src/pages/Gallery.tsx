@@ -207,7 +207,9 @@ const Gallery = () => {
               })}
             </div>
             
-            <style jsx global>{`
+            {/* Fix: Removed jsx and global properties from style tag */}
+            <style>
+              {`
               .image-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -242,7 +244,8 @@ const Gallery = () => {
                   grid-row: span 1;
                 }
               }
-            `}</style>
+              `}
+            </style>
           </>
         )}
       </main>
