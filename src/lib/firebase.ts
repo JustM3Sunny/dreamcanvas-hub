@@ -4,6 +4,7 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
+import { toast } from 'sonner';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,7 +19,7 @@ const firebaseConfig = {
              "imgs-e2d36",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 
                  localStorage.getItem('FIREBASE_STORAGE_BUCKET') || 
-                 "imgs-e2d36.appspot.com", // Corrected the storage bucket URL
+                 "imgs-e2d36.appspot.com", 
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || 
                      localStorage.getItem('FIREBASE_MESSAGING_SENDER_ID') || 
                      "777726030782",
@@ -48,8 +49,12 @@ if (typeof window !== 'undefined') {
 }
 export const analyticsInstance = analytics;
 
+// Get the current domain for better error messages
+const currentDomain = typeof window !== 'undefined' ? window.location.hostname : 'unknown';
+
 // Log Firebase configuration status
 console.log("Firebase initialized with project:", firebaseConfig.projectId);
+console.log("Current domain:", currentDomain);
 
 // Check if Firebase is properly configured with real values
 if (firebaseConfig.apiKey === "AIzaSyB76w-iL5EHs3zBDgn7WEfodneAhoqt6qY") {

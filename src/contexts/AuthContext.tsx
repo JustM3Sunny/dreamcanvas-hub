@@ -4,7 +4,8 @@ import {
   User, 
   signInWithPopup, 
   signOut as firebaseSignOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import { toast } from 'sonner';
@@ -43,9 +44,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await signInWithPopup(auth, googleProvider);
       toast.success('Successfully signed in!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing in with Google', error);
-      toast.error('Failed to sign in with Google');
+      
+      if (error.code === 'auth/unauthorized-domain') {
+        const currentDomain = window.location.hostname;
+        toast.error(
+          <div className="space-y-2">
+            <p>Domain not authorized for Firebase authentication</p>
+            <p className="text-xs text-gray-300">
+              Add <span className="font-mono bg-gray-800 px-1 rounded">{currentDomain}</span> to Firebase Console ➝ Authentication ➝ Settings ➝ Authorized domains
+            </p>
+          </div>, 
+          { duration: 8000 }
+        );
+      } else {
+        toast.error(`Failed to sign in: ${error.message}`);
+      }
     }
   };
 
@@ -53,9 +68,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await firebaseSignOut(auth);
       toast.success('Successfully signed out!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing out', error);
-      toast.error('Failed to sign out');
+      toast.error(`Failed to sign out: ${error.message}`);
     }
   };
 
