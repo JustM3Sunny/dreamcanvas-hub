@@ -1,127 +1,131 @@
 
 import React from 'react';
 import Navbar from '../components/Navbar';
+import ApiKeyManager from '../components/ApiKeyManager';
+import FirebaseConfigManager from '../components/FirebaseConfigManager';
+import { useAuth } from '../contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
-import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Code } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ApiPage = () => {
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard!");
-  };
-
+  const { currentUser } = useAuth();
+  
   return (
     <div className="min-h-screen flex flex-col bg-imaginexus-dark">
       <Navbar />
       
-      <main className="flex-1 container mx-auto px-4 py-16">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4 text-white">API Documentation</h1>
-          <p className="text-xl text-gray-400 mb-8">
-            Integrate ImagiNexus image generation into your applications with our robust API.
-          </p>
+      <main className="flex-1 container mx-auto px-4 py-10">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold mb-6 text-white">API & Configuration</h1>
           
-          <div className="space-y-8">
-            <div className="bg-imaginexus-darker rounded-lg p-6 border border-gray-800">
-              <h2 className="text-2xl font-semibold mb-4 text-white">Authentication</h2>
-              <p className="text-gray-300 mb-4">
-                To use the ImagiNexus API, you'll need an API key. You can generate one from your dashboard.
-              </p>
-              <div className="bg-black rounded p-4 mb-4 relative">
-                <code className="text-green-500">
-                  Authorization: Bearer YOUR_API_KEY
-                </code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-2 text-gray-400 hover:text-white"
-                  onClick={() => handleCopy("Authorization: Bearer YOUR_API_KEY")}
-                >
-                  <Copy className="h-4 w-4" />
+          {!currentUser ? (
+            <Card className="bg-imaginexus-darker border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-white">Authentication Required</CardTitle>
+                <CardDescription className="text-gray-400">
+                  You need to sign in to access API and configuration settings.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => useAuth().signInWithGoogle()} className="gradient-btn">
+                  Sign In with Google
                 </Button>
-              </div>
-            </div>
-            
-            <div className="bg-imaginexus-darker rounded-lg p-6 border border-gray-800">
-              <h2 className="text-2xl font-semibold mb-4 text-white">Generate Image</h2>
-              <p className="text-gray-300 mb-4">
-                Create a new image from a text prompt.
-              </p>
-              <div className="bg-black rounded p-4 mb-6 relative">
-                <pre className="text-green-500 whitespace-pre-wrap">
-                  {`POST /api/v1/images/generate
-
-{
-  "prompt": "A futuristic city with flying cars",
-  "style": "photographic",
-  "aspectRatio": "16:9"
-}`}
-                </pre>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-2 text-gray-400 hover:text-white"
-                  onClick={() => handleCopy(`POST /api/v1/images/generate
-
-{
-  "prompt": "A futuristic city with flying cars",
-  "style": "photographic",
-  "aspectRatio": "16:9"
-}`)}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Tabs defaultValue="configuration" className="w-full">
+              <TabsList className="grid grid-cols-2 mb-8 bg-imaginexus-darker border-gray-800">
+                <TabsTrigger value="configuration" className="data-[state=active]:bg-imaginexus-accent1 text-white">
+                  Configuration
+                </TabsTrigger>
+                <TabsTrigger value="api" className="data-[state=active]:bg-imaginexus-accent1 text-white">
+                  API Documentation
+                </TabsTrigger>
+              </TabsList>
               
-              <h3 className="text-xl font-semibold mb-2 text-white">Response</h3>
-              <div className="bg-black rounded p-4 relative">
-                <pre className="text-green-500 whitespace-pre-wrap">
-                  {`{
-  "id": "img_123456",
-  "url": "https://api.imaginexus.com/images/img_123456.png",
-  "prompt": "A futuristic city with flying cars",
-  "style": "photographic",
-  "aspectRatio": "16:9",
-  "createdAt": "2023-06-15T10:30:00Z"
-}`}
-                </pre>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-2 text-gray-400 hover:text-white"
-                  onClick={() => handleCopy(`{
-  "id": "img_123456",
-  "url": "https://api.imaginexus.com/images/img_123456.png",
-  "prompt": "A futuristic city with flying cars",
-  "style": "photographic",
-  "aspectRatio": "16:9",
-  "createdAt": "2023-06-15T10:30:00Z"
-}`)}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="bg-imaginexus-darker rounded-lg p-6 border border-gray-800">
-              <h2 className="text-2xl font-semibold mb-4 text-white">Rate Limits</h2>
-              <p className="text-gray-300">
-                Different plans have different rate limits:
-              </p>
-              <ul className="list-disc pl-6 mt-2 space-y-2 text-gray-300">
-                <li>Free: 10 requests per day</li>
-                <li>Pro: 100 requests per day</li>
-                <li>Business: 1000 requests per day</li>
-              </ul>
-            </div>
-
-            <div className="text-center mt-12">
-              <Button className="gradient-btn text-white px-6 py-2">
-                Get API Access
-              </Button>
-            </div>
-          </div>
+              <TabsContent value="configuration" className="space-y-6">
+                <FirebaseConfigManager />
+                <ApiKeyManager />
+              </TabsContent>
+              
+              <TabsContent value="api">
+                <Card className="bg-imaginexus-darker border-gray-800">
+                  <CardHeader>
+                    <CardTitle className="text-white">API Documentation</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Learn how to integrate with the Imagicaaa API
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-invert max-w-none">
+                      <p>
+                        The Imagicaaa API allows you to generate images programmatically using our powerful AI models.
+                        Below is a simple example of how to use our API.
+                      </p>
+                      
+                      <div className="bg-gray-900 p-4 rounded-md my-4">
+                        <pre className="text-gray-300 text-sm overflow-auto">
+                          <code>{`// Example API Call
+fetch('https://api.imagicaaa.com/generate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_API_KEY'
+  },
+  body: JSON.stringify({
+    prompt: 'A beautiful sunset over mountains',
+    style: 'photorealistic',
+    aspectRatio: '16:9'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));`}</code>
+                        </pre>
+                      </div>
+                      
+                      <h3 className="text-xl font-semibold text-white mt-6">API Endpoints</h3>
+                      
+                      <table className="w-full border-collapse my-4">
+                        <thead>
+                          <tr className="border-b border-gray-700">
+                            <th className="text-left p-2">Endpoint</th>
+                            <th className="text-left p-2">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b border-gray-800">
+                            <td className="p-2"><code>/generate</code></td>
+                            <td className="p-2">Generate a new image from a text prompt</td>
+                          </tr>
+                          <tr className="border-b border-gray-800">
+                            <td className="p-2"><code>/enhance</code></td>
+                            <td className="p-2">Enhance an existing image</td>
+                          </tr>
+                          <tr className="border-b border-gray-800">
+                            <td className="p-2"><code>/analyze</code></td>
+                            <td className="p-2">Analyze an image and get a description</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      
+                      <div className="mt-6">
+                        <Link to="/settings">
+                          <Button className="flex items-center gap-2">
+                            <Code size={16} />
+                            <span>Get Your API Key</span>
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </main>
     </div>
