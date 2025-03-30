@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -175,7 +176,7 @@ const Index = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col bg-imaginexus-dark">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 to-slate-800">
       <Navbar />
       
       <main className="flex-1 flex flex-col">
@@ -201,15 +202,32 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-sm md:text-base text-imaginexus-accent2 mb-2">Create stunning images instantly</h2>
+              <h2 className="text-sm md:text-base text-blue-400 mb-2">AI IMAGE GENERATION PLATFORM</h2>
               <h1 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6">
                 Transform Your Ideas into<br />
-                <span className="gradient-text">Stunning Visuals</span>
+                <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                  Stunning Visuals
+                </span>
               </h1>
               <p className="text-gray-300 md:text-lg max-w-3xl mx-auto mb-8">
                 Generate beautiful, unique visuals from your descriptions in seconds with our
                 state-of-the-art AI technology.
               </p>
+              
+              <div className="flex justify-center gap-4 mb-12">
+                <Link to="/ghibli">
+                  <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Try Ghibli Generator
+                  </Button>
+                </Link>
+                <Link to="/gallery">
+                  <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-800">
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    View Gallery
+                  </Button>
+                </Link>
+              </div>
             </motion.div>
             
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
@@ -221,12 +239,12 @@ const Index = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-imaginexus-darker rounded-lg border border-gray-800 p-4 text-center"
+                    className="bg-slate-800 rounded-lg border border-gray-800 p-4 text-center"
                   >
                     <h3 className="text-white font-medium mb-2">Sign in to get started</h3>
                     <p className="text-gray-400 text-sm mb-4">Create an account to generate and save images</p>
                     <Button 
-                      className="gradient-btn w-full" 
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 w-full" 
                       onClick={() => useAuth().signInWithGoogle()}
                     >
                       Sign In
@@ -234,10 +252,10 @@ const Index = () => {
                   </motion.div>
                 )}
                 
-                <div className="mt-4 bg-imaginexus-darker rounded-lg border border-gray-800 p-4">
+                <div className="mt-4 bg-slate-800 rounded-lg border border-gray-800 p-4">
                   <h3 className="text-white font-medium mb-2">Featured Styles</h3>
                   <div className="space-y-2">
-                    <Link to="/styles" className="block hover:bg-gray-800/50 p-2 rounded transition-colors">
+                    <Link to="/ghibli" className="block hover:bg-gray-800/50 p-2 rounded transition-colors">
                       <span className="text-sm text-gray-300">🎨 Ghibli Animation</span>
                     </Link>
                     <Link to="/styles" className="block hover:bg-gray-800/50 p-2 rounded transition-colors">
@@ -247,7 +265,7 @@ const Index = () => {
                       <span className="text-sm text-gray-300">🎮 Pixel Art</span>
                     </Link>
                   </div>
-                  <Link to="/styles" className="block text-center mt-3 text-imaginexus-accent1 text-sm hover:underline">
+                  <Link to="/styles" className="block text-center mt-3 text-blue-400 text-sm hover:underline">
                     View All Styles
                   </Link>
                 </div>
@@ -260,11 +278,11 @@ const Index = () => {
                   value={activeTab}
                   onValueChange={setActiveTab}
                 >
-                  <TabsList className="bg-imaginexus-darker border-gray-800">
-                    <TabsTrigger value="text-to-image" className="data-[state=active]:bg-imaginexus-accent1 text-white">
+                  <TabsList className="bg-slate-800 border-gray-800">
+                    <TabsTrigger value="text-to-image" className="data-[state=active]:bg-blue-600 text-white">
                       Text to Image
                     </TabsTrigger>
-                    <TabsTrigger value="image-to-image" className="data-[state=active]:bg-imaginexus-accent1 text-white">
+                    <TabsTrigger value="image-to-image" className="data-[state=active]:bg-blue-600 text-white">
                       Image to Image
                     </TabsTrigger>
                   </TabsList>
@@ -282,7 +300,7 @@ const Index = () => {
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
                             placeholder="Describe the image you want to create..."
-                            className="min-h-[150px] bg-imaginexus-darker text-white border-gray-800 rounded-md resize-none main-textarea"
+                            className="min-h-[150px] bg-slate-800 text-white border-gray-800 rounded-md resize-none main-textarea"
                           />
                           <div className="absolute bottom-2 right-2 flex items-center space-x-2">
                             <Button 
@@ -312,10 +330,10 @@ const Index = () => {
                           <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">Style</label>
                             <Select value={style} onValueChange={setStyle}>
-                              <SelectTrigger className="bg-imaginexus-darker border-gray-800 text-white">
+                              <SelectTrigger className="bg-slate-800 border-gray-800 text-white">
                                 <SelectValue placeholder="Select style" />
                               </SelectTrigger>
-                              <SelectContent className="bg-imaginexus-darker border-gray-800">
+                              <SelectContent className="bg-slate-800 border-gray-800">
                                 {getAvailableStyles().map(styleOption => (
                                   <SelectItem key={styleOption} value={styleOption}>
                                     {styleOption.charAt(0).toUpperCase() + styleOption.slice(1).replace('-', ' ')}
@@ -332,7 +350,7 @@ const Index = () => {
                                 variant={aspectRatio === "1:1" ? "default" : "outline"} 
                                 className={
                                   aspectRatio === "1:1" 
-                                    ? "flex-1 bg-imaginexus-accent1 hover:bg-imaginexus-accent1/90" 
+                                    ? "flex-1 bg-blue-600 hover:bg-blue-700" 
                                     : "flex-1 bg-transparent border-gray-700 text-white"
                                 }
                                 onClick={() => setAspectRatio("1:1")}
@@ -343,7 +361,7 @@ const Index = () => {
                                 variant={aspectRatio === "16:9" ? "default" : "outline"} 
                                 className={
                                   aspectRatio === "16:9" 
-                                    ? "flex-1 bg-imaginexus-accent1 hover:bg-imaginexus-accent1/90" 
+                                    ? "flex-1 bg-blue-600 hover:bg-blue-700" 
                                     : "flex-1 bg-transparent border-gray-700 text-white"
                                 }
                                 onClick={() => setAspectRatio("16:9")}
@@ -354,7 +372,7 @@ const Index = () => {
                                 variant={aspectRatio === "4:3" ? "default" : "outline"} 
                                 className={
                                   aspectRatio === "4:3" 
-                                    ? "flex-1 bg-imaginexus-accent1 hover:bg-imaginexus-accent1/90" 
+                                    ? "flex-1 bg-blue-600 hover:bg-blue-700" 
                                     : "flex-1 bg-transparent border-gray-700 text-white"
                                 }
                                 onClick={() => setAspectRatio("4:3")}
@@ -369,10 +387,10 @@ const Index = () => {
                           <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">Quality Level</label>
                             <Select value={qualityLevel} onValueChange={setQualityLevel}>
-                              <SelectTrigger className="bg-imaginexus-darker border-gray-800 text-white">
+                              <SelectTrigger className="bg-slate-800 border-gray-800 text-white">
                                 <SelectValue placeholder="Select quality" />
                               </SelectTrigger>
-                              <SelectContent className="bg-imaginexus-darker border-gray-800">
+                              <SelectContent className="bg-slate-800 border-gray-800">
                                 <SelectItem value="standard">Standard</SelectItem>
                                 <SelectItem value="high">High</SelectItem>
                                 <SelectItem value="ultra-high">Ultra High</SelectItem>
@@ -393,6 +411,9 @@ const Index = () => {
                             <p className="text-sm text-indigo-200">
                               <span className="font-medium">Ghibli Style:</span> You've used {userSubscription.ghibliImagesGenerated || 0} of {userSubscription.ghibliImagesLimit} daily Ghibli images
                             </p>
+                            <Link to="/ghibli" className="text-sm text-blue-400 hover:underline block mt-1">
+                              Go to dedicated Ghibli Generator
+                            </Link>
                           </div>
                         )}
                         
@@ -400,7 +421,7 @@ const Index = () => {
                           <Button 
                             onClick={() => handleGenerateImage(false)}
                             disabled={isGenerating || !prompt.trim() || !currentUser || isGenerationDisabled()}
-                            className="flex-1 gradient-btn text-white py-6 rounded-md"
+                            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-6 rounded-md"
                           >
                             {isGenerating ? (
                               <>
@@ -413,7 +434,7 @@ const Index = () => {
                           <Button 
                             onClick={() => handleGenerateImage(true)}
                             disabled={isGenerating || !prompt.trim() || !currentUser || isGenerationDisabled()}
-                            className="flex-1 bg-imaginexus-accent2 hover:bg-imaginexus-accent2/90 text-white py-6 rounded-md"
+                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-6 rounded-md"
                           >
                             {isGenerating ? (
                               <>
@@ -430,7 +451,7 @@ const Index = () => {
                         </div>
                       </motion.div>
                       
-                      <div className="flex items-center justify-center bg-imaginexus-darker rounded-md p-4 min-h-[350px] border border-gray-800">
+                      <div className="flex items-center justify-center bg-slate-800 rounded-md p-4 min-h-[350px] border border-gray-800">
                         {generatedImage ? (
                           <motion.img 
                             initial={{ opacity: 0 }}
@@ -460,7 +481,7 @@ const Index = () => {
                   <TabsContent value="image-to-image">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <div className="space-y-4">
-                        <div className="bg-imaginexus-darker rounded-lg border border-gray-800 p-4 mb-4">
+                        <div className="bg-slate-800 rounded-lg border border-gray-800 p-4 mb-4">
                           <h3 className="text-white font-medium mb-2">Image to Image Generation</h3>
                           <p className="text-gray-300 text-sm mb-4">
                             Upload an image and our AI will analyze it and create a similar image with the option to modify the style.
@@ -476,7 +497,7 @@ const Index = () => {
                         )}
                       </div>
                       
-                      <div className="flex items-center justify-center bg-imaginexus-darker rounded-md p-4 min-h-[350px] border border-gray-800">
+                      <div className="flex items-center justify-center bg-slate-800 rounded-md p-4 min-h-[350px] border border-gray-800">
                         {generatedImage ? (
                           <motion.img 
                             initial={{ opacity: 0 }}
@@ -531,7 +552,7 @@ const Index = () => {
                 
                 {recentImages.length > 0 && (
                   <Link to="/gallery">
-                    <Button className="bg-transparent border border-imaginexus-accent1 text-white hover:bg-imaginexus-accent1/20">
+                    <Button className="bg-transparent border border-blue-500 text-white hover:bg-blue-500/20">
                       View Full Gallery
                     </Button>
                   </Link>
@@ -545,7 +566,7 @@ const Index = () => {
               transition={{ delay: 0.4 }}
               className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left"
             >
-              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800 transform transition-all hover:scale-105 hover:shadow-glow">
+              <div className="bg-slate-800 p-6 rounded-lg border border-gray-700 transform transition-all hover:scale-105 hover:shadow-lg">
                 <h3 className="text-xl font-bold text-white mb-3">State-of-the-Art AI</h3>
                 <p className="text-gray-400">
                   Our platform uses cutting-edge AI technology to generate stunning, high-resolution 
@@ -553,7 +574,7 @@ const Index = () => {
                 </p>
               </div>
               
-              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800 transform transition-all hover:scale-105 hover:shadow-glow">
+              <div className="bg-slate-800 p-6 rounded-lg border border-gray-700 transform transition-all hover:scale-105 hover:shadow-lg">
                 <h3 className="text-xl font-bold text-white mb-3">Multiple Styles</h3>
                 <p className="text-gray-400">
                   Choose from multiple artistic styles including Ghibli animation, photorealistic renders, 
@@ -561,7 +582,7 @@ const Index = () => {
                 </p>
               </div>
               
-              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800 transform transition-all hover:scale-105 hover:shadow-glow">
+              <div className="bg-slate-800 p-6 rounded-lg border border-gray-700 transform transition-all hover:scale-105 hover:shadow-lg">
                 <h3 className="text-xl font-bold text-white mb-3">Image Analysis</h3>
                 <p className="text-gray-400">
                   Upload your own images and our AI will analyze them to create similar images 

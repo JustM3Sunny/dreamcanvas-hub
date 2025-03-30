@@ -902,3 +902,106 @@ export function getRemainingTimeUntilReset(lastRefresh: Date): string {
     return `${diffMins}m`;
   }
 }
+
+export async function generateGhibliImage(prompt: string, userId: string): Promise<GeneratedImage> {
+  try {
+    const userLimit = await checkUserLimit(userId);
+    if (!userLimit) {
+      throw new Error("Could not verify user limits");
+    }
+    
+    // Check ghibli limit
+    const ghibliLimit = userLimit.ghibliImagesLimit || 5;
+    const ghibliUsed = userLimit.ghibliImagesGenerated || 0;
+    
+    if (ghibliUsed >= ghibliLimit) {
+      throw new Error(`You've reached your daily limit of ${ghibliLimit} Ghibli style images. Your quota will renew in 24 hours.`);
+    }
+    
+    const finalPrompt = `Create a Studio Ghibli style animation scene with: ${prompt}. Use Ghibli's signature soft colors, detailed backgrounds, and whimsical elements.`;
+    
+    // Use the Gemini specialized model for Ghibli
+    const genAI = initGemini();
+    if (!genAI) {
+      throw new Error("Gemini API is not properly configured.");
+    }
+    
+    toast.info("Generating Studio Ghibli style image...");
+    
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash-exp-image-generation",
+      safetySettings: [
+        {
+          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        },
+      ],
+    });
+    
+    const chatSession = model.startChat({
+      history: [],
+      generationConfig: {
+        temperature: 1,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 8192,
+      },
+    });
+    
+    const result = await chatSession.sendMessage(finalPrompt);
+    
+    const candidates = result.response.candidates || [];
+    for (let candidate_index = 0; candidate_index < candidates.length; candidate_index++) {
+      for (let part_index = 0; part_index < (candidates[candidate_index].content?.parts?.length || 0); part_index++) {
+        const part = candidates[candidate_index].content?.parts?.[part_index];
+        if (part && part.inlineData) {
+          try {
+            const imageRef = ref(storage, `gemini/${userId}/${Date.now()}_ghibli.jpg`);
+            await uploadString(imageRef, part.inlineData.data, 'base64', { contentType: part.inlineData.mimeType });
+            const imageUrl = await getDownloadURL(imageRef);
+            
+            // Increment user counts
+            await incrementUserGenerationCount(userId, 'ghibli', 0);
+            await trackStyleUsage('ghibli');
+            await trackPromptTerms(prompt);
+            
+            const imageData: GeneratedImage = {
+              imageUrl: imageUrl,
+              prompt,
+              style: 'ghibli',
+              aspectRatio: '1:1',
+              createdAt: Date.now(),
+              userId,
+              model: "gemini-2.0-flash-exp-image-generation",
+              usageTokens: 0
+            };
+            
+            const docRef = await addDoc(collection(db, 'images'), imageData);
+            
+            return {
+              ...imageData,
+              id: docRef.id
+            };
+          } catch (err) {
+            console.error("Error processing Gemini image:", err);
+          }
+        }
+      }
+    }
+    
+    throw new Error("Failed to generate Ghibli image. Please try again.");
+    
+  } catch (error: any) {
+    console.error("Error generating Ghibli image:", error);
+    toast.error(error.message || "Failed to generate Ghibli image");
+    throw error;
+  }
+}

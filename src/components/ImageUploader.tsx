@@ -18,15 +18,16 @@ import { motion } from 'framer-motion';
 
 interface ImageUploaderProps {
   onImageGenerated: (imageUrl: string, prompt: string) => void;
+  forceStyle?: string;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
+const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceStyle }) => {
   const { currentUser } = useAuth();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzedPrompt, setAnalyzedPrompt] = useState<string>('');
-  const [style, setStyle] = useState<string>("match-original");
+  const [style, setStyle] = useState<string>(forceStyle || "match-original");
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -84,7 +85,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
     setIsAnalyzing(true);
     try {
       const result = await generateFromImage(selectedImage, currentUser.uid, {
-        style,
+        style: forceStyle || style,
         enhancePrompt: true
       });
       setAnalyzedPrompt(result.analyzedPrompt);
@@ -114,7 +115,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
           whileTap={{ scale: 0.98 }}
         >
           <Card 
-            className={`border-dashed border-2 ${uploadError ? 'border-red-500' : 'border-gray-400'} bg-transparent hover:bg-gray-900/20 transition-colors cursor-pointer`} 
+            className={`border-dashed border-2 ${uploadError ? 'border-red-500' : 'border-slate-500'} bg-transparent hover:bg-slate-800/50 transition-colors cursor-pointer`} 
             onClick={triggerFileInput}
           >
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -143,7 +144,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
           </Card>
         </motion.div>
       ) : (
-        <Card className="border bg-imaginexus-darker">
+        <Card className="border bg-slate-800/50 border-slate-700">
           <CardContent className="p-4">
             <div className="flex justify-between items-start mb-3">
               <h3 className="text-white font-medium">Image Preview</h3>
@@ -167,29 +168,32 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
               />
             </div>
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Output Style</label>
-              <Select value={style} onValueChange={setStyle}>
-                <SelectTrigger className="bg-imaginexus-darker border-gray-700 text-white">
-                  <SelectValue placeholder="Select style" />
-                </SelectTrigger>
-                <SelectContent className="bg-imaginexus-darker border-gray-700">
-                  <SelectItem value="match-original">Match Original</SelectItem>
-                  <SelectItem value="photorealistic">Photorealistic</SelectItem>
-                  <SelectItem value="digital-art">Digital Art</SelectItem>
-                  <SelectItem value="illustration">Illustration</SelectItem>
-                  <SelectItem value="anime">Anime</SelectItem>
-                  <SelectItem value="3d-render">3D Render</SelectItem>
-                  <SelectItem value="pixel-art">Pixel Art</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {!forceStyle && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Output Style</label>
+                <Select value={style} onValueChange={setStyle}>
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                    <SelectValue placeholder="Select style" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="match-original">Match Original</SelectItem>
+                    <SelectItem value="photorealistic">Photorealistic</SelectItem>
+                    <SelectItem value="digital-art">Digital Art</SelectItem>
+                    <SelectItem value="illustration">Illustration</SelectItem>
+                    <SelectItem value="anime">Anime</SelectItem>
+                    <SelectItem value="3d-render">3D Render</SelectItem>
+                    <SelectItem value="pixel-art">Pixel Art</SelectItem>
+                    <SelectItem value="ghibli">Studio Ghibli</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             
             {analyzedPrompt && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 bg-gray-800/50 p-3 rounded-md border border-gray-700"
+                className="mb-4 bg-slate-700/50 p-3 rounded-md border border-slate-600"
               >
                 <h4 className="text-gray-300 text-sm mb-1">AI Analysis:</h4>
                 <p className="text-white text-sm">{analyzedPrompt}</p>
@@ -197,7 +201,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
             )}
             
             <Button 
-              className="w-full gradient-btn"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
               onClick={handleAnalyzeImage}
               disabled={isAnalyzing}
             >
@@ -206,7 +210,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Analyzing...
                 </>
-              ) : analyzedPrompt ? 'Generate Again' : 'Analyze & Generate Similar Image'}
+              ) : analyzedPrompt ? 'Generate Again' : `Analyze & Generate ${forceStyle ? forceStyle + ' ' : ''}Image`}
             </Button>
           </CardContent>
         </Card>

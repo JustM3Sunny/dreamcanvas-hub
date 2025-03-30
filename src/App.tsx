@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import Styles from "./pages/Styles";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
+import GhibliGenerator from "./pages/GhibliGenerator";
 
 // Create a new QueryClient
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/styles" element={<Styles />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/ghibli" element={<GhibliGenerator />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -47,7 +47,7 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
     : 0;
   
   return (
-    <div className="bg-imaginexus-darker rounded-lg border border-gray-800 p-4">
+    <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
       <div className="flex justify-between items-center mb-3">
         <div>
           <span className={`inline-block px-2 py-1 rounded text-xs text-white ${getBadgeColor()}`}>
@@ -56,7 +56,7 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
         </div>
         {userLimit.tier !== 'UNLIMITED' && (
           <Link to="/pricing">
-            <Button variant="outline" size="sm" className="h-8 text-xs border-gray-700 text-white">
+            <Button variant="outline" size="sm" className="h-8 text-xs border-slate-600 text-white">
               Upgrade <ArrowUpRight className="ml-1 h-3 w-3" />
             </Button>
           </Link>
@@ -72,7 +72,7 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
         </div>
         <Progress 
           value={usagePercentage} 
-          className="h-2 bg-gray-800" 
+          className="h-2 bg-slate-700" 
           indicatorClassName={getProgressColor()}
         />
       </div>
@@ -87,9 +87,14 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
           </div>
           <Progress 
             value={ghibliPercentage} 
-            className="h-2 bg-gray-800" 
+            className="h-2 bg-slate-700" 
             indicatorClassName="bg-indigo-500"
           />
+          <div className="mt-1">
+            <Link to="/ghibli" className="text-xs text-blue-400 hover:underline">
+              Try our dedicated Ghibli Generator →
+            </Link>
+          </div>
         </div>
       )}
       
@@ -100,7 +105,7 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
             <span>Quota resets in: {timeUntilReset}</span>
           </div>
           <p className="text-gray-300">
-            <Link to="/pricing" className="text-imaginexus-accent1 hover:underline">Upgrade your plan</Link> for more generations.
+            <Link to="/pricing" className="text-blue-400 hover:underline">Upgrade your plan</Link> for more generations.
           </p>
         </div>
       ) : (
