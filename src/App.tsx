@@ -14,6 +14,12 @@ import Styles from "./pages/Styles";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import GhibliGenerator from "./pages/GhibliGenerator";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Features from "./pages/Features";
+import Templates from "./pages/Templates";
+import Community from "./pages/Community";
+import Support from "./pages/Support";
 
 // Create a new QueryClient
 const queryClient = new QueryClient();
@@ -26,14 +32,19 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/api" element={<ApiPage />} />
-            <Route path="/styles" element={<Styles />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/ghibli" element={<GhibliGenerator />} />
+            <Route path="/" element={<Layout><Index /></Layout>} />
+            <Route path="/gallery" element={<Layout><Gallery /></Layout>} />
+            <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
+            <Route path="/api" element={<Layout><ApiPage /></Layout>} />
+            <Route path="/styles" element={<Layout><Styles /></Layout>} />
+            <Route path="/settings" element={<Layout><Settings /></Layout>} />
+            <Route path="/admin" element={<Layout><Admin /></Layout>} />
+            <Route path="/ghibli" element={<Layout><GhibliGenerator /></Layout>} />
+            <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/features" element={<Layout><Features /></Layout>} />
+            <Route path="/templates" element={<Layout><Templates /></Layout>} />
+            <Route path="/community" element={<Layout><Community /></Layout>} />
+            <Route path="/support" element={<Layout><Support /></Layout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

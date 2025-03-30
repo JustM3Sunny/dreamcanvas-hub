@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/button';
@@ -12,16 +12,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { LogOut, User as UserIcon, Settings } from 'lucide-react';
+import { 
+  LogOut, 
+  User as UserIcon, 
+  Settings, 
+  Menu, 
+  X, 
+  Home, 
+  Image, 
+  Code, 
+  Palette,
+  PanelRight,
+  GalleryVertical,
+  LayoutDashboard
+} from 'lucide-react';
 
 const Navbar = () => {
   const { currentUser, signInWithGoogle, signOut } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
   
   return (
-    <header className="w-full py-4 px-4 md:px-8 bg-imaginexus-darker border-b border-gray-800">
+    <header className="sticky top-0 z-50 w-full py-3 px-4 md:px-6 bg-imaginexus-darker border-b border-white/10 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
             <path 
               d="M12 2L4 7V17L12 22L20 17V7L12 2Z" 
               stroke="url(#gradient)" 
@@ -43,68 +61,178 @@ const Navbar = () => {
               </linearGradient>
             </defs>
           </svg>
-          <span className="text-white text-lg font-semibold">Imagicaaa</span>
+          <span className="text-white text-xl font-bold">Imagicaaa</span>
         </Link>
         
-        <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/gallery" className="text-white hover:text-imaginexus-accent1 transition-colors">
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-6">
+          <Link to="/gallery" className="text-gray-300 hover:text-white transition-colors">
             Gallery
           </Link>
-          <Link to="/pricing" className="text-white hover:text-imaginexus-accent1 transition-colors">
+          <Link to="/ghibli" className="text-gray-300 hover:text-white transition-colors">
+            Ghibli
+          </Link>
+          <Link to="/features" className="text-gray-300 hover:text-white transition-colors">
+            Features
+          </Link>
+          <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors">
             Pricing
           </Link>
-          <Link to="/api" className="text-white hover:text-imaginexus-accent1 transition-colors">
+          <Link to="/api" className="text-gray-300 hover:text-white transition-colors">
             API
-          </Link>
-          <Link to="/styles" className="text-white hover:text-imaginexus-accent1 transition-colors">
-            Styles
           </Link>
           
           {currentUser ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="h-8 w-8 cursor-pointer">
-                  <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || "User"} />
-                  <AvatarFallback>{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-imaginexus-darker border-gray-800">
-                <DropdownMenuLabel className="text-white">
-                  {currentUser.displayName || currentUser.email}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-gray-800" />
-                <DropdownMenuItem className="text-white hover:bg-gray-800 cursor-pointer" onClick={() => {}}>
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-gray-800 cursor-pointer" onClick={() => {}}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-gray-800" />
-                <DropdownMenuItem className="text-white hover:bg-gray-800 cursor-pointer" onClick={signOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center space-x-4">
+              <Link to="/dashboard" className="text-gray-300 hover:text-white transition-colors">
+                Dashboard
+              </Link>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/50 transition-all">
+                    <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || "User"} />
+                    <AvatarFallback className="bg-primary text-white">{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-imaginexus-darker border-white/10">
+                  <DropdownMenuLabel className="text-white">
+                    {currentUser.displayName || currentUser.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem className="text-gray-300 hover:bg-white/5 cursor-pointer" asChild>
+                    <Link to="/dashboard">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-gray-300 hover:bg-white/5 cursor-pointer" asChild>
+                    <Link to="/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem className="text-gray-300 hover:bg-white/5 cursor-pointer" onClick={signOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ) : (
             <Button 
               onClick={signInWithGoogle} 
-              className="bg-white text-imaginexus-dark hover:bg-gray-200 rounded-full px-6"
+              className="bg-gradient-primary hover:opacity-90 text-white rounded-md px-6"
             >
               Sign In
             </Button>
           )}
         </nav>
         
-        {!currentUser && (
-          <Button 
-            onClick={signInWithGoogle} 
-            className="md:hidden bg-white text-imaginexus-dark hover:bg-gray-200 rounded-full px-6"
+        {/* Mobile menu button */}
+        <div className="md:hidden flex items-center">
+          {currentUser && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-8 w-8 mr-4 cursor-pointer ring-2 ring-primary/20">
+                  <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || "User"} />
+                  <AvatarFallback className="bg-primary text-white">{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-imaginexus-darker border-white/10">
+                <DropdownMenuLabel className="text-white">
+                  {currentUser.displayName || currentUser.email}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem className="text-gray-300 hover:bg-white/5 cursor-pointer" asChild>
+                  <Link to="/dashboard">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-gray-300 hover:bg-white/5 cursor-pointer" asChild>
+                  <Link to="/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem className="text-gray-300 hover:bg-white/5 cursor-pointer" onClick={signOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          
+          <button 
+            type="button" 
+            className="text-gray-300 hover:text-white transition-colors" 
+            onClick={toggleMobileMenu}
           >
-            Sign In
-          </Button>
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+        
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 top-[61px] z-40 bg-imaginexus-darker border-t border-white/10">
+            <div className="flex flex-col p-4 space-y-4">
+              <Link 
+                to="/gallery" 
+                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                onClick={toggleMobileMenu}
+              >
+                <Image size={20} />
+                <span>Gallery</span>
+              </Link>
+              <Link 
+                to="/ghibli" 
+                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                onClick={toggleMobileMenu}
+              >
+                <GalleryVertical size={20} />
+                <span>Ghibli</span>
+              </Link>
+              <Link 
+                to="/features" 
+                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                onClick={toggleMobileMenu}
+              >
+                <Palette size={20} />
+                <span>Features</span>
+              </Link>
+              <Link 
+                to="/pricing" 
+                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                onClick={toggleMobileMenu}
+              >
+                <PanelRight size={20} />
+                <span>Pricing</span>
+              </Link>
+              <Link 
+                to="/api" 
+                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                onClick={toggleMobileMenu}
+              >
+                <Code size={20} />
+                <span>API</span>
+              </Link>
+              
+              {!currentUser && (
+                <Button 
+                  onClick={() => {
+                    signInWithGoogle();
+                    toggleMobileMenu();
+                  }}
+                  className="w-full bg-gradient-primary hover:opacity-90 text-white rounded-md"
+                >
+                  Sign In
+                </Button>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </header>

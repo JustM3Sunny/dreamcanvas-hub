@@ -5,33 +5,33 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
 
-    --card: 222 47% 11%;
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 252 80% 74%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 7%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217 32% 17%;
+    --muted: 0 0% 9%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 217 32% 17%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 7%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
-    --ring: 213 27% 84%;
+    --border: 0 0% 10%;
+    --input: 0 0% 14%;
+    --ring: 252 80% 74%;
 
     --radius: 0.5rem;
   }
@@ -98,4 +98,45 @@
 
 .wide {
   grid-column: span 2;
+}
+
+/* New SaaS UI styles */
+.card-hover {
+  @apply transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg hover:shadow-primary/10;
+}
+
+.glass-panel {
+  @apply border border-white/10 bg-white/5 backdrop-blur-lg;
+}
+
+.sidebar-item {
+  @apply flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-200 text-gray-400 hover:text-white hover:bg-white/5;
+}
+
+.sidebar-item.active {
+  @apply bg-white/10 text-white;
+}
+
+.dashboard-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.feature-item {
+  @apply flex flex-col items-center gap-3 p-6 rounded-xl border border-border bg-secondary;
+}
+
+.icon-box {
+  @apply flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-primary text-white;
+}
+
+.badge-blue {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300;
+}
+
+.badge-green {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+}
+
+.badge-purple {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300;
 }

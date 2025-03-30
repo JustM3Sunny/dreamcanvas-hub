@@ -4,7 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { UserLimit, getRemainingTimeUntilReset } from '../services/imageService';
-import { ArrowUpRight, Clock } from 'lucide-react';
+import { ArrowUpRight, Clock, Sparkles } from 'lucide-react';
 
 interface SubscriptionInfoProps {
   userLimit: UserLimit;
@@ -18,15 +18,15 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
   const getBadgeColor = () => {
     switch (userLimit.tier) {
       case 'FREE':
-        return 'bg-gray-600';
+        return 'bg-gray-800 border border-gray-700';
       case 'BASIC':
-        return 'bg-blue-600';
+        return 'bg-blue-900/50 border border-blue-600/30';
       case 'PRO':
-        return 'bg-purple-600';
+        return 'bg-purple-900/50 border border-purple-600/30';
       case 'UNLIMITED':
-        return 'bg-amber-600';
+        return 'bg-amber-900/50 border border-amber-600/30';
       default:
-        return 'bg-gray-600';
+        return 'bg-gray-800 border border-gray-700';
     }
   };
   
@@ -34,7 +34,7 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
   const getProgressColor = () => {
     if (usagePercentage > 90) return 'bg-red-500';
     if (usagePercentage > 70) return 'bg-orange-500';
-    return 'bg-green-500';
+    return 'bg-primary';
   };
   
   // Calculate time until quota resets
@@ -47,16 +47,16 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
     : 0;
   
   return (
-    <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-      <div className="flex justify-between items-center mb-3">
+    <div className="bg-imaginexus-darker rounded-xl border border-white/10 p-5 shadow-lg shadow-primary/5">
+      <div className="flex justify-between items-center mb-4">
         <div>
-          <span className={`inline-block px-2 py-1 rounded text-xs text-white ${getBadgeColor()}`}>
-            {userLimit.tier} PLAN
+          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white ${getBadgeColor()}`}>
+            {userLimit.tier} PLAN <Sparkles className="ml-1 h-3 w-3" />
           </span>
         </div>
         {userLimit.tier !== 'UNLIMITED' && (
           <Link to="/pricing">
-            <Button variant="outline" size="sm" className="h-8 text-xs border-slate-600 text-white">
+            <Button variant="outline" size="sm" className="h-8 text-xs border-white/10 bg-white/5 text-white hover:bg-white/10">
               Upgrade <ArrowUpRight className="ml-1 h-3 w-3" />
             </Button>
           </Link>
@@ -64,7 +64,7 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
       </div>
       
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-1 text-sm">
+        <div className="flex justify-between items-center mb-1.5 text-sm">
           <span className="text-gray-300">Daily generation limit</span>
           <span className="text-white font-medium">
             {userLimit.imagesGenerated} / {userLimit.imagesLimit}
@@ -72,14 +72,14 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
         </div>
         <Progress 
           value={usagePercentage} 
-          className="h-2 bg-slate-700" 
+          className="h-2 bg-white/5" 
           indicatorClassName={getProgressColor()}
         />
       </div>
       
       {hasGhibliLimit && (
         <div className="mb-4">
-          <div className="flex justify-between items-center mb-1 text-sm">
+          <div className="flex justify-between items-center mb-1.5 text-sm">
             <span className="text-gray-300">Ghibli style limit</span>
             <span className="text-white font-medium">
               {userLimit.ghibliImagesGenerated ?? 0} / {userLimit.ghibliImagesLimit}
@@ -87,12 +87,13 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
           </div>
           <Progress 
             value={ghibliPercentage} 
-            className="h-2 bg-slate-700" 
+            className="h-2 bg-white/5" 
             indicatorClassName="bg-indigo-500"
           />
-          <div className="mt-1">
-            <Link to="/ghibli" className="text-xs text-blue-400 hover:underline">
-              Try our dedicated Ghibli Generator →
+          <div className="mt-2">
+            <Link to="/ghibli" className="text-xs text-primary hover:underline inline-flex items-center">
+              <Sparkles className="mr-1 h-3 w-3" />
+              Try our dedicated Ghibli Generator
             </Link>
           </div>
         </div>
@@ -100,18 +101,18 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
       
       {userLimit.imagesGenerated >= userLimit.imagesLimit ? (
         <div className="text-sm">
-          <div className="flex items-center gap-2 text-amber-400 mb-1">
+          <div className="flex items-center gap-2 text-amber-400 mb-1.5">
             <Clock className="h-3.5 w-3.5" />
             <span>Quota resets in: {timeUntilReset}</span>
           </div>
           <p className="text-gray-300">
-            <Link to="/pricing" className="text-blue-400 hover:underline">Upgrade your plan</Link> for more generations.
+            <Link to="/pricing" className="text-primary hover:underline">Upgrade your plan</Link> for more generations.
           </p>
         </div>
       ) : (
         <div className="text-sm text-gray-300">
           <p>You have <span className="text-white font-medium">{remainingImages}</span> generations remaining today.</p>
-          <div className="flex items-center gap-1 text-gray-400 mt-1">
+          <div className="flex items-center gap-1 text-gray-400 mt-1.5">
             <Clock className="h-3 w-3" />
             <span className="text-xs">Resets in {timeUntilReset}</span>
           </div>

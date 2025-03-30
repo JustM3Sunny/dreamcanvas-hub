@@ -54,8 +54,8 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				imaginexus: {
-					dark: '#0f1115',
-					darker: '#090a0c',
+					dark: '#080808',
+					darker: '#050505',
 					light: '#ffffff',
 					muted: '#8E9196',
 					accent1: '#9b87f5',
@@ -87,12 +87,22 @@ export default {
 				fadeIn: {
 					'0%': { opacity: '0' },
 					'100%': { opacity: '1' }
+				},
+				slideInFromBottom: {
+					'0%': { transform: 'translateY(20px)', opacity: '0' },
+					'100%': { transform: 'translateY(0)', opacity: '1' }
+				},
+				pulse: {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fadeIn 0.5s ease-in-out'
+				'fade-in': 'fadeIn 0.5s ease-in-out',
+				'slide-up': 'slideInFromBottom 0.5s ease-out',
+				'pulse-slow': 'pulse 3s ease-in-out infinite'
 			},
 			backgroundImage: {
 				'gradient-primary': 'linear-gradient(to right, #9b87f5, #33C3F0)'
