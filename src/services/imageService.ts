@@ -352,9 +352,19 @@ export async function generateImage(
         const response = result.response;
         const text = response.text();
         
-        tokensUsed = response.candidates?.[0]?.countTokens?.totalTokens || 
-                     (response as any).candidates?.[0]?.usageMetadata?.totalTokens || 
-                     0;
+        const candidate = response.candidates?.[0];
+        tokensUsed = 0;
+        
+        if (candidate) {
+          const responseAny = response as any;
+          if (responseAny.candidates?.[0]?.usageMetadata?.totalTokens) {
+            tokensUsed = responseAny.candidates[0].usageMetadata.totalTokens;
+          } else if (responseAny.candidates?.[0]?.tokenCount) {
+            tokensUsed = responseAny.candidates[0].tokenCount;
+          } else if (responseAny.usage?.totalTokens) {
+            tokensUsed = responseAny.usage.totalTokens;
+          }
+        }
         
         const parts = response.candidates?.[0]?.content?.parts || [];
         const inlineData = parts.find(part => part.inlineData)?.inlineData;
@@ -517,9 +527,16 @@ export async function generateFromImage(
     
     const analyzedText = result.response.text();
     
-    const tokensUsed = result.response.candidates?.[0]?.countTokens?.totalTokens || 
-                      (result.response as any).candidates?.[0]?.usageMetadata?.totalTokens || 
-                      0;
+    let tokensUsed = 0;
+    
+    const responseAny = result.response as any;
+    if (responseAny.candidates?.[0]?.usageMetadata?.totalTokens) {
+      tokensUsed = responseAny.candidates[0].usageMetadata.totalTokens;
+    } else if (responseAny.candidates?.[0]?.tokenCount) {
+      tokensUsed = responseAny.candidates[0].tokenCount;
+    } else if (responseAny.usage?.totalTokens) {
+      tokensUsed = responseAny.usage.totalTokens;
+    }
     
     console.log("Gemini Analysis:", analyzedText);
     
