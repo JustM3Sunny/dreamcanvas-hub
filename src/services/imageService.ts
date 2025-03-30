@@ -1,4 +1,3 @@
-
 import { Client } from "@gradio/client";
 import { toast } from "sonner";
 import { ref, uploadBytes, getDownloadURL, listAll, uploadString } from 'firebase/storage';
@@ -78,7 +77,6 @@ const IMAGE_TIERS = {
   }
 };
 
-// Initialize Gemini AI
 const initGemini = () => {
   const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 
                   localStorage.getItem("GEMINI_API_KEY") || 
@@ -94,7 +92,6 @@ const initGemini = () => {
   }
 };
 
-// Check user limits
 export async function checkUserLimit(userId: string): Promise<UserLimit | null> {
   try {
     const userLimitRef = doc(db, 'userLimits', userId);
@@ -103,11 +100,9 @@ export async function checkUserLimit(userId: string): Promise<UserLimit | null> 
     if (userLimitDoc.exists()) {
       const userData = userLimitDoc.data() as UserLimit;
       
-      // Check if it's a new day and should refresh
       const lastRefresh = userData.lastRefresh ? new Date(userData.lastRefresh) : new Date(0);
       const today = new Date();
       if (lastRefresh.toDateString() !== today.toDateString()) {
-        // Reset daily count
         await updateDoc(userLimitRef, {
           imagesGenerated: 0,
           lastRefresh: today
@@ -125,7 +120,6 @@ export async function checkUserLimit(userId: string): Promise<UserLimit | null> 
         id: userLimitDoc.id
       };
     } else {
-      // Create new user limit document (default to FREE tier)
       const newUserLimit: UserLimit = {
         userId,
         imagesGenerated: 0,
@@ -152,7 +146,6 @@ export async function checkUserLimit(userId: string): Promise<UserLimit | null> 
     console.error("Error checking user limits:", error);
     if (error.code === 'permission-denied') {
       toast.error("Firebase permission denied. Please check your Firestore security rules in settings.");
-      // Return a default limit to prevent app from breaking completely
       return {
         userId,
         imagesGenerated: 0,
@@ -167,18 +160,15 @@ export async function checkUserLimit(userId: string): Promise<UserLimit | null> 
   }
 }
 
-// Increment user's image generation count and token usage
 async function incrementUserGenerationCount(userId: string, tokensUsed: number = 0): Promise<boolean> {
   try {
     const userLimitRef = doc(db, 'userLimits', userId);
     
-    // Use atomic increment operation
     await updateDoc(userLimitRef, {
       imagesGenerated: increment(1),
       totalTokensUsed: increment(tokensUsed)
     });
     
-    // Update analytics data
     await updateGenerationAnalytics();
     
     return true;
@@ -188,7 +178,6 @@ async function incrementUserGenerationCount(userId: string, tokensUsed: number =
   }
 }
 
-// Update analytics data
 async function updateGenerationAnalytics(): Promise<void> {
   try {
     const analyticsRef = doc(db, 'analytics', 'imageGeneration');
@@ -210,7 +199,6 @@ async function updateGenerationAnalytics(): Promise<void> {
   }
 }
 
-// Track style usage
 async function trackStyleUsage(style: string): Promise<void> {
   try {
     const styleRef = doc(db, 'analytics', 'styles');
@@ -230,10 +218,8 @@ async function trackStyleUsage(style: string): Promise<void> {
   }
 }
 
-// Track prompt terms
 async function trackPromptTerms(prompt: string): Promise<void> {
   try {
-    // Extract meaningful words (exclude common words)
     const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'with', 'of', 'to', 'for'];
     const words = prompt.toLowerCase().split(/\s+/).filter(word => 
       word.length > 3 && !commonWords.includes(word)
@@ -246,7 +232,6 @@ async function trackPromptTerms(prompt: string): Promise<void> {
       const data = promptDoc.data() as Record<string, number>;
       const updatedData = { ...data };
       
-      // Update counts for each meaningful word
       words.forEach(word => {
         updatedData[word] = (updatedData[word] || 0) + 1;
       });
@@ -265,30 +250,24 @@ async function trackPromptTerms(prompt: string): Promise<void> {
   }
 }
 
-// Get usage statistics
 export async function getUsageStatistics(): Promise<UsageStats> {
   try {
-    // Get total generations
     const analyticsRef = doc(db, 'analytics', 'imageGeneration');
     const analyticsDoc = await getDoc(analyticsRef);
     const totalGenerated = analyticsDoc.exists() ? (analyticsDoc.data()?.totalGenerations || 0) : 0;
     
-    // Get style breakdown
     const styleRef = doc(db, 'analytics', 'styles');
     const styleDoc = await getDoc(styleRef);
     const styleBreakdown = styleDoc.exists() ? styleDoc.data() as Record<string, number> : {};
     
-    // Get user count
     const userLimitsRef = collection(db, 'userLimits');
     const userSnapshot = await getDocs(userLimitsRef);
     const userCount = userSnapshot.size;
     
-    // Get popular prompt terms
     const promptRef = doc(db, 'analytics', 'prompts');
     const promptDoc = await getDoc(promptRef);
     const promptData = promptDoc.exists() ? promptDoc.data() as Record<string, number> : {};
     
-    // Convert to sorted array
     const popularPromptTerms = Object.entries(promptData)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
@@ -313,7 +292,6 @@ export async function getUsageStatistics(): Promise<UsageStats> {
   }
 }
 
-// Generate image with Gemini 2.0 Flash model
 export async function generateImage(
   prompt: string, 
   style: string = 'photorealistic',
@@ -321,7 +299,6 @@ export async function generateImage(
   userId: string
 ): Promise<GeneratedImage> {
   try {
-    // Check user limits
     const userLimit = await checkUserLimit(userId);
     if (!userLimit) {
       throw new Error("Could not verify user limits");
@@ -331,30 +308,25 @@ export async function generateImage(
       throw new Error(`You've reached your daily limit of ${userLimit.imagesLimit} images. Upgrade your plan for more!`);
     }
     
-    // Apply special prompt modifications for styles
     let finalPrompt = prompt;
-    let clientModel = "Rooc/FLUX-Fast"; // default model for Gradio
+    let clientModel = "Rooc/FLUX-Fast";
     
-    // Special handling for Ghibli style
     if (style === 'ghibli') {
       finalPrompt = `Create a Studio Ghibli style animation scene with: ${prompt}. Use Ghibli's signature soft colors, detailed backgrounds, and whimsical elements.`;
     } else if (style === 'anime') {
       finalPrompt = `Generate an anime-style image with: ${prompt}. Use vibrant colors, distinctive anime character features, and dynamic composition.`;
     }
     
-    // Enhance the prompt with style and aspect ratio
     const enhancedPrompt = `Generate a ${style} style image with aspect ratio ${aspectRatio} of: ${finalPrompt}`;
     
     toast.info("Generating your image...");
     
-    // Try to use Gemini first for image generation
     const genAI = initGemini();
     let imageUrl = "";
     let tokensUsed = 0;
     
     if (genAI) {
       try {
-        // Use Gemini 2.0 Flash for image generation
         const model = genAI.getGenerativeModel({ 
           model: "gemini-2.0-flash",
           safetySettings: [
@@ -373,7 +345,6 @@ export async function generateImage(
           ],
         });
         
-        // Request image generation with Gemini
         const result = await model.generateContent({
           contents: [{ role: "user", parts: [{ text: `Generate an image: ${enhancedPrompt}` }] }],
         });
@@ -382,12 +353,10 @@ export async function generateImage(
         const text = response.text();
         tokensUsed = response.candidates?.[0]?.usageMetadata?.totalTokens || 0;
         
-        // Extract image from response - Gemini 2.0 can include inline images
         const parts = response.candidates?.[0]?.content?.parts || [];
         const inlineData = parts.find(part => part.inlineData)?.inlineData;
         
         if (inlineData && inlineData.mimeType.startsWith('image/')) {
-          // Upload the base64 image to Firebase Storage
           const imageRef = ref(storage, `gemini/${userId}/${Date.now()}.jpg`);
           await uploadString(imageRef, inlineData.data, 'base64', { contentType: inlineData.mimeType });
           imageUrl = await getDownloadURL(imageRef);
@@ -395,24 +364,19 @@ export async function generateImage(
         }
       } catch (geminiError) {
         console.error("Error generating with Gemini:", geminiError);
-        // Gemini fallback to Gradio
+        toast.info("Falling back to Gradio for image generation");
       }
     }
     
-    // If Gemini failed or is not configured, use Gradio
     if (!imageUrl) {
       console.log("Falling back to Gradio for image generation");
-      // Connect to the Gradio client
       const client = await Client.connect(clientModel);
-      
-      // Call the predict function
       const result = await client.predict("/predict", {
         param_0: enhancedPrompt,
       });
       
       console.log("API Raw Response:", result);
       
-      // Validate and extract image URL
       if (!result.data || !Array.isArray(result.data) || result.data.length === 0) {
         throw new Error("Invalid response: No data received");
       }
@@ -425,23 +389,17 @@ export async function generateImage(
     
     console.log("Image URL:", imageUrl);
     
-    // Create a unique filename based on timestamp
-    const timestamp = Date.now();
-    
-    // Increment user's generation count and token usage
     await incrementUserGenerationCount(userId, tokensUsed);
     
-    // Track style usage and prompt terms for analytics
     await trackStyleUsage(style);
     await trackPromptTerms(prompt);
     
-    // Save image metadata to Firestore
     const imageData: GeneratedImage = {
       imageUrl: imageUrl,
       prompt,
       style,
       aspectRatio,
-      createdAt: timestamp,
+      createdAt: Date.now(),
       userId,
       model: tokensUsed > 0 ? "gemini-2.0-flash" : clientModel,
       usageTokens: tokensUsed
@@ -462,7 +420,6 @@ export async function generateImage(
   }
 }
 
-// Alternative image generation with enhanced capabilities
 export async function enhancedImageGeneration(
   prompt: string, 
   userId: string,
@@ -474,21 +431,17 @@ export async function enhancedImageGeneration(
   }
 ): Promise<GeneratedImage> {
   try {
-    // Check if style is available for user's tier
     const userLimit = await checkUserLimit(userId);
     if (!userLimit) {
       throw new Error("Could not verify user subscription tier");
     }
     
-    // Get available styles for the user's tier
     const availableStyles = IMAGE_TIERS[userLimit.tier as keyof typeof IMAGE_TIERS]?.styles || IMAGE_TIERS.FREE.styles;
     
-    // If requested style is not available for this tier
     if (!availableStyles.includes(options.style)) {
       throw new Error(`The "${options.style}" style is not available on your current plan. Please upgrade to access this style.`);
     }
     
-    // Enhance the prompt with quality instructions
     const enhancedPrompt = `Generate a ${options.detailLevel} resolution, ${options.quality} quality, ${options.style} style image with aspect ratio ${options.aspectRatio} of: ${prompt}`;
     
     toast.info("Generating enhanced image...");
@@ -498,17 +451,15 @@ export async function enhancedImageGeneration(
     console.error("Error with enhanced image generation:", error);
     toast.error(error.message || "Enhanced generation failed");
     
-    // If it's not a tier limitation error, try with standard method
     if (!error.message.includes("not available on your current plan")) {
       toast.info("Trying standard method instead...");
       return generateImage(prompt, "photorealistic", "1:1", userId);
     }
     
-    throw error; // Re-throw the error for the caller to handle
+    throw error;
   }
 }
 
-// Generate from image using Gemini Vision
 export async function generateFromImage(
   imageFile: File, 
   userId: string,
@@ -518,7 +469,6 @@ export async function generateFromImage(
   }
 ): Promise<{ image: GeneratedImage, analyzedPrompt: string }> {
   try {
-    // Check user limits
     const userLimit = await checkUserLimit(userId);
     if (!userLimit) {
       throw new Error("Could not verify user limits");
@@ -530,18 +480,15 @@ export async function generateFromImage(
     
     toast.info("Analyzing your image...");
     
-    // Upload image to Firebase Storage temporarily for analysis
     const imageRef = ref(storage, `temp/${userId}/${Date.now()}_${imageFile.name}`);
     await uploadBytes(imageRef, imageFile);
     const imageUrl = await getDownloadURL(imageRef);
     
-    // Initialize Gemini AI for image analysis
     const genAI = initGemini();
     if (!genAI) {
       throw new Error("Gemini AI is not configured properly. Please check your API key.");
     }
     
-    // Convert image to base64 for Gemini
     const fileReader = new FileReader();
     const imageBase64Promise = new Promise<string>((resolve, reject) => {
       fileReader.onload = () => {
@@ -558,10 +505,8 @@ export async function generateFromImage(
     
     const imageBase64 = await imageBase64Promise;
     
-    // Get a Gemini model with vision capabilities
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     
-    // Analyze the image
     const result = await model.generateContent([
       imageBase64,
       "Analyze this image in detail and create a descriptive prompt that would generate a similar image. Include all visual elements, style, colors, composition, and mood. Be specific and detailed but concise."
@@ -573,17 +518,15 @@ export async function generateFromImage(
     
     toast.success("Image analyzed! Generating similar image...");
     
-    // Now generate a new image based on the analysis
     let promptToUse = analyzedText;
     if (options.style !== "match-original") {
       promptToUse = `${analyzedText} Render this in ${options.style} style.`;
     }
     
-    // Generate the image
     const generatedImage = await generateImage(
       promptToUse,
       options.style === "match-original" ? "photorealistic" : options.style,
-      "1:1", // default aspect ratio
+      "1:1",
       userId
     );
     
@@ -600,7 +543,6 @@ export async function generateFromImage(
 
 export async function enhancePrompt(prompt: string): Promise<string> {
   try {
-    // Use Gemini AI if available
     const genAI = initGemini();
     if (genAI) {
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -609,7 +551,6 @@ export async function enhancePrompt(prompt: string): Promise<string> {
       return result.response.text();
     }
     
-    // Fallback to simple enhancement
     const enhancers = [
       "highly detailed",
       "professional quality",
@@ -622,37 +563,30 @@ export async function enhancePrompt(prompt: string): Promise<string> {
     return `${prompt}, ${randomEnhancer}`;
   } catch (error) {
     console.error("Error enhancing prompt:", error);
-    return prompt; // Return original prompt if enhancement fails
+    return prompt;
   }
 }
 
 export function isImageGenerationPrompt(prompt: string): boolean {
-  // Convert to lowercase for case-insensitive matching
   const lowerPrompt = prompt.toLowerCase();
   
-  // Image generation phrases in multiple languages
   const imageRelatedTerms = [
-    // English - more specific phrases
     "create an image", "generate an image", "draw a picture", "picture of",
     "create a picture", "generate a picture", "visualize", "show me an image",
     "create a visual", "design an image", "generate a photo", "can you create an image",
     "can you draw", "create a scene", "illustrate", "render an image", "generate art",
     "create art", "show a picture", "photo of", 
     
-    // Hindi/Transliterated terms
     "photo banao", "tasveer banao", "chitra banao", "image banao", "picture banao",
     "ek photo", "ek tasveer", "ek chitra", "dikhao", "bana do", "create karo"
   ];
   
-  // More sophisticated detection using various patterns
   return (
-    // Check if any image-related term is in the prompt
     imageRelatedTerms.some(term => lowerPrompt.includes(term)) ||
     
-    // Check for common phrases that request visuals
-    /how .{1,20} looks?/i.test(prompt) ||
-    /what .{1,20} looks? like/i.test(prompt) ||
-    /show .{1,20} (of|about)/i.test(prompt) ||
+    /how .{1,20} looks/i.test(prompt) ||
+    /what .{1,20} looks like/i.test(prompt) ||
+    /show .{1,30} (of|about)/i.test(prompt) ||
     /(create|make|generate|show) .{1,30} (picture|image|photo|visual|illustration)/i.test(prompt)
   );
 }
@@ -678,7 +612,6 @@ export async function getUserImages(userId: string): Promise<GeneratedImage[]> {
   }
 }
 
-// Get user's latest generated images
 export async function getLatestUserImages(userId: string, count: number = 4): Promise<GeneratedImage[]> {
   try {
     const imagesRef = collection(db, 'images');
@@ -728,7 +661,6 @@ export async function getLatestUserImages(userId: string, count: number = 4): Pr
   }
 }
 
-// Get all public gallery images
 export async function getGalleryImages(pageSize: number = 12, lastImage: GeneratedImage | null = null): Promise<GeneratedImage[]> {
   try {
     const imagesRef = collection(db, 'images');
@@ -765,11 +697,9 @@ export async function getGalleryImages(pageSize: number = 12, lastImage: Generat
   }
 }
 
-// Get user subscription info
 export async function getUserSubscription(userId: string): Promise<UserLimit> {
   const userLimit = await checkUserLimit(userId);
   if (!userLimit) {
-    // Return default free tier if no data exists
     return {
       userId,
       imagesGenerated: 0,
@@ -783,12 +713,10 @@ export async function getUserSubscription(userId: string): Promise<UserLimit> {
   return userLimit;
 }
 
-// Update user subscription tier
 export async function updateUserSubscription(userId: string, tier: string): Promise<boolean> {
   try {
     const userLimitRef = doc(db, 'userLimits', userId);
     
-    // Get tier limits
     const tierConfig = IMAGE_TIERS[tier as keyof typeof IMAGE_TIERS];
     if (!tierConfig) {
       throw new Error(`Invalid tier: ${tier}`);
