@@ -639,18 +639,14 @@ export async function getLatestUserImages(userId: string, count: number = 4): Pr
       const indexUrlMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"]+/);
       if (indexUrlMatch && indexUrlMatch[0]) {
         toast.error(
-          <div className="space-y-2">
-            <p>Firebase index required</p>
-            <p className="text-xs">
-              Click the link in your console to create the required index
-            </p>
-          </div>,
           {
-            duration: 10000,
+            title: "Firebase index required",
+            description: "Click the link in your console to create the required index",
             action: {
               label: "Open Console",
               onClick: () => window.open(indexUrlMatch[0], '_blank')
-            }
+            },
+            duration: 10000
           }
         );
       }
