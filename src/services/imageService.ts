@@ -324,6 +324,10 @@ export async function getUsageStatistics(): Promise<UsageStats> {
   }
 }
 
+async function run() {
+  // Your code here
+}
+
 export async function generateImage(
   prompt: string, 
   style: string = 'photorealistic',
@@ -387,8 +391,6 @@ export async function generateImage(
               topP: 0.95,
               topK: 40,
               maxOutputTokens: 8192,
-              responseModalities: ["image", "text"],
-              responseMimeType: "text/plain",
             },
           });
           

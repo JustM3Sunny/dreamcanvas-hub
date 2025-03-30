@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -117,7 +116,6 @@ const Index = () => {
       
       setGeneratedImage(image);
       
-      // Reload user data to get updated limits
       await loadUserData();
       
     } catch (error: any) {
@@ -141,8 +139,7 @@ const Index = () => {
     setActiveTab('text-to-image');
     setPrompt(analyzedPrompt);
     
-    // Reload user data to get updated limits
-    loadUserData();
+    await loadUserData();
   };
   
   const getAvailableStyles = () => {
@@ -166,10 +163,8 @@ const Index = () => {
     if (!currentUser) return true;
     if (!userSubscription) return false;
     
-    // Check general image limit
     if (userSubscription.imagesGenerated >= userSubscription.imagesLimit) return true;
     
-    // Check Ghibli specific limit if applicable
     if (style === 'ghibli') {
       const ghibliUsed = userSubscription.ghibliImagesGenerated || 0;
       const ghibliLimit = userSubscription.ghibliImagesLimit || 2;
@@ -387,7 +382,6 @@ const Index = () => {
                           </div>
                         </div>
                         
-                        {/* Mobile subscription info */}
                         {currentUser && userSubscription && (
                           <div className="lg:hidden mb-4">
                             <SubscriptionInfo userLimit={userSubscription} />
