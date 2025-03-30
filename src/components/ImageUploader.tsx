@@ -2,10 +2,18 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateFromImage } from '../services/imageService';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ImageUploaderProps {
   onImageGenerated: (imageUrl: string, prompt: string) => void;
@@ -17,21 +25,25 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzedPrompt, setAnalyzedPrompt] = useState<string>('');
+  const [style, setStyle] = useState<string>("match-original");
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
       // Validate file type
       if (!file.type.match('image.*')) {
-        toast.error('Please upload an image file');
+        setUploadError('Please upload an image file');
         return;
       }
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image size cannot exceed 5MB');
+        setUploadError('Image size cannot exceed 5MB');
         return;
       }
       
@@ -56,6 +68,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
     setSelectedImage(null);
     setPreviewUrl(null);
     setAnalyzedPrompt('');
+    setUploadError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -69,7 +82,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
     
     setIsAnalyzing(true);
     try {
-      const result = await generateFromImage(selectedImage, currentUser.uid);
+      const result = await generateFromImage(selectedImage, currentUser.uid, {
+        style,
+        enhancePrompt: true
+      });
       setAnalyzedPrompt(result.analyzedPrompt);
       onImageGenerated(result.image.imageUrl, result.analyzedPrompt);
       toast.success('Image analyzed and similar image generated!');
@@ -92,15 +108,32 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
       />
       
       {!previewUrl ? (
-        <Card className="border-dashed border-2 border-gray-400 bg-transparent hover:bg-gray-900/20 transition-colors cursor-pointer" onClick={triggerFileInput}>
+        <Card 
+          className={`border-dashed border-2 ${uploadError ? 'border-red-500' : 'border-gray-400'} bg-transparent hover:bg-gray-900/20 transition-colors cursor-pointer`} 
+          onClick={triggerFileInput}
+        >
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Upload className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-300 text-center mb-2">
-              Click to upload an image for analysis
-            </p>
-            <p className="text-gray-500 text-sm text-center">
-              JPG, PNG, or GIF (max 5MB)
-            </p>
+            {uploadError ? (
+              <>
+                <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+                <p className="text-red-500 text-center mb-2">
+                  {uploadError}
+                </p>
+                <p className="text-gray-500 text-sm text-center">
+                  Click to try again
+                </p>
+              </>
+            ) : (
+              <>
+                <Upload className="h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-300 text-center mb-2">
+                  Click to upload an image for analysis
+                </p>
+                <p className="text-gray-500 text-sm text-center">
+                  JPG, PNG, or GIF (max 5MB)
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -124,6 +157,24 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
                 alt="Preview" 
                 className="w-full h-full object-cover"
               />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">Output Style</label>
+              <Select value={style} onValueChange={setStyle}>
+                <SelectTrigger className="bg-imaginexus-darker border-gray-700 text-white">
+                  <SelectValue placeholder="Select style" />
+                </SelectTrigger>
+                <SelectContent className="bg-imaginexus-darker border-gray-700">
+                  <SelectItem value="match-original">Match Original</SelectItem>
+                  <SelectItem value="photorealistic">Photorealistic</SelectItem>
+                  <SelectItem value="digital-art">Digital Art</SelectItem>
+                  <SelectItem value="illustration">Illustration</SelectItem>
+                  <SelectItem value="anime">Anime</SelectItem>
+                  <SelectItem value="3d-render">3D Render</SelectItem>
+                  <SelectItem value="pixel-art">Pixel Art</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             {analyzedPrompt && (

@@ -12,7 +12,9 @@ import ApiPage from "./pages/Api";
 import NotFound from "./pages/NotFound";
 import Styles from "./pages/Styles";
 import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 
+// Create a new QueryClient
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -29,6 +31,7 @@ const App = () => (
             <Route path="/api" element={<ApiPage />} />
             <Route path="/styles" element={<Styles />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

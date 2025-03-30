@@ -2,7 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence, collection, getDocs } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 import { toast } from 'sonner';
 
@@ -74,10 +74,15 @@ export const isCurrentDomainAuthorized = () => {
     'localhost',
     firebaseConfig.authDomain,
     `${firebaseConfig.projectId}.web.app`,
-    `${firebaseConfig.projectId}.firebaseapp.com`
+    `${firebaseConfig.projectId}.firebaseapp.com`,
+    'preview--dreamcanvas-hub.lovable.app',
+    'lovable.dev',
+    'lovableproject.com'
   ];
   
-  return commonAuthorizedDomains.includes(currentDomain);
+  return commonAuthorizedDomains.includes(currentDomain) || 
+         currentDomain.includes('lovableproject.com') || 
+         currentDomain.includes('lovable.dev');
 };
 
 // Check if Firebase is properly configured with real values
@@ -86,5 +91,40 @@ if (firebaseConfig.apiKey === "AIzaSyB76w-iL5EHs3zBDgn7WEfodneAhoqt6qY") {
 } else if (firebaseConfig.apiKey.includes("VITE_FIREBASE")) {
   console.warn("Firebase environment variables not found. Using fallback configuration.");
 }
+
+// Helper to create required indexes if missing
+export const createRequiredIndexes = async () => {
+  try {
+    // Test query that requires the index
+    const imagesRef = collection(db, 'images');
+    await getDocs(imagesRef);
+    return true;
+  } catch (error: any) {
+    if (error.code === 'failed-precondition' && error.message.includes('index')) {
+      // Extract the index creation URL
+      const indexUrlMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"]+/);
+      if (indexUrlMatch && indexUrlMatch[0]) {
+        const indexUrl = indexUrlMatch[0];
+        toast.error(
+          <div className="space-y-2">
+            <p>Firebase index required</p>
+            <p className="text-xs">
+              Create the required index by clicking the link in the console error or visiting Firebase Console
+            </p>
+          </div>,
+          {
+            duration: 10000,
+            action: {
+              label: "Open Console",
+              onClick: () => window.open(indexUrl, '_blank')
+            }
+          }
+        );
+        console.error(`Firebase index required: ${indexUrl}`);
+      }
+    }
+    return false;
+  }
+};
 
 export default app;

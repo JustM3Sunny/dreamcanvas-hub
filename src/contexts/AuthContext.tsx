@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider
 } from 'firebase/auth';
-import { auth, googleProvider, isCurrentDomainAuthorized } from '../lib/firebase';
+import { auth, googleProvider, isCurrentDomainAuthorized, createRequiredIndexes } from '../lib/firebase';
 import { toast } from 'sonner';
 
 interface AuthContextType {
@@ -35,6 +35,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
+      
+      if (user) {
+        // If user is logged in, check and create required indexes
+        createRequiredIndexes();
+      }
     });
 
     return unsubscribe;
