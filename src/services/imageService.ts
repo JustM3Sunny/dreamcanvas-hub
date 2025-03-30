@@ -351,7 +351,10 @@ export async function generateImage(
         
         const response = result.response;
         const text = response.text();
-        tokensUsed = response.candidates?.[0]?.usageMetadata?.totalTokens || 0;
+        
+        tokensUsed = response.candidates?.[0]?.countTokens?.totalTokens || 
+                     (response as any).candidates?.[0]?.usageMetadata?.totalTokens || 
+                     0;
         
         const parts = response.candidates?.[0]?.content?.parts || [];
         const inlineData = parts.find(part => part.inlineData)?.inlineData;
@@ -513,7 +516,11 @@ export async function generateFromImage(
     ]);
     
     const analyzedText = result.response.text();
-    const tokensUsed = result.response.candidates?.[0]?.usageMetadata?.totalTokens || 0;
+    
+    const tokensUsed = result.response.candidates?.[0]?.countTokens?.totalTokens || 
+                      (result.response as any).candidates?.[0]?.usageMetadata?.totalTokens || 
+                      0;
+    
     console.log("Gemini Analysis:", analyzedText);
     
     toast.success("Image analyzed! Generating similar image...");
