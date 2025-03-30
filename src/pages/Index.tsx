@@ -126,7 +126,7 @@ const Index = () => {
     }
   };
   
-  const handleImageUploadGeneration = (imageUrl: string, analyzedPrompt: string) => {
+  const handleImageUploadGeneration = async (imageUrl: string, analyzedPrompt: string) => {
     setGeneratedImage({
       imageUrl,
       prompt: analyzedPrompt,
