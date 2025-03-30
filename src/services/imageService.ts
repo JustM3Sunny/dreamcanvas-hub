@@ -638,17 +638,13 @@ export async function getLatestUserImages(userId: string, count: number = 4): Pr
     if (error.code === 'failed-precondition') {
       const indexUrlMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"]+/);
       if (indexUrlMatch && indexUrlMatch[0]) {
-        toast.error(
-          {
-            title: "Firebase index required",
-            description: "Click the link in your console to create the required index",
-            action: {
-              label: "Open Console",
-              onClick: () => window.open(indexUrlMatch[0], '_blank')
-            },
-            duration: 10000
+        toast.error("Firebase index required - Click the link in your console to create the required index", {
+          duration: 10000,
+          action: {
+            label: "Open Console",
+            onClick: () => window.open(indexUrlMatch[0], '_blank')
           }
-        );
+        });
       }
     } else if (error.code === 'permission-denied') {
       toast.error("Firebase permission denied. Please check your Firestore security rules in settings.");

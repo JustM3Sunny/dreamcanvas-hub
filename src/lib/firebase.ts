@@ -105,17 +105,13 @@ export const createRequiredIndexes = async () => {
       const indexUrlMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"]+/);
       if (indexUrlMatch && indexUrlMatch[0]) {
         const indexUrl = indexUrlMatch[0];
-        toast.error(
-          {
-            title: "Firebase index required",
-            description: "Create the required index by clicking the link in the console error or visiting Firebase Console",
-            action: {
-              label: "Open Console",
-              onClick: () => window.open(indexUrl, '_blank')
-            },
-            duration: 10000
+        toast.error("Firebase index required - Create the required index by clicking the link in the console error", {
+          duration: 10000,
+          action: {
+            label: "Open Console",
+            onClick: () => window.open(indexUrl, '_blank')
           }
-        );
+        });
         console.error(`Firebase index required: ${indexUrl}`);
       }
     }
