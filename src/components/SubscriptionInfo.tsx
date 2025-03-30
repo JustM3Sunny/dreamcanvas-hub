@@ -3,8 +3,8 @@ import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { UserLimit } from '../services/imageService';
-import { ArrowUpRight } from 'lucide-react';
+import { UserLimit, getRemainingTimeUntilReset } from '../services/imageService';
+import { ArrowUpRight, Clock } from 'lucide-react';
 
 interface SubscriptionInfoProps {
   userLimit: UserLimit;
@@ -37,6 +37,15 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
     return 'bg-green-500';
   };
   
+  // Calculate time until quota resets
+  const timeUntilReset = getRemainingTimeUntilReset(userLimit.lastRefresh);
+  
+  // Calculate Ghibli progress if applicable
+  const hasGhibliLimit = (userLimit.ghibliImagesLimit ?? 0) > 0;
+  const ghibliPercentage = hasGhibliLimit 
+    ? ((userLimit.ghibliImagesGenerated ?? 0) / (userLimit.ghibliImagesLimit ?? 1)) * 100
+    : 0;
+  
   return (
     <div className="bg-imaginexus-darker rounded-lg border border-gray-800 p-4">
       <div className="flex justify-between items-center mb-3">
@@ -68,13 +77,39 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
         />
       </div>
       
-      {userLimit.tier !== 'UNLIMITED' && (
+      {hasGhibliLimit && (
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-1 text-sm">
+            <span className="text-gray-300">Ghibli style limit</span>
+            <span className="text-white font-medium">
+              {userLimit.ghibliImagesGenerated ?? 0} / {userLimit.ghibliImagesLimit}
+            </span>
+          </div>
+          <Progress 
+            value={ghibliPercentage} 
+            className="h-2 bg-gray-800" 
+            indicatorClassName="bg-indigo-500"
+          />
+        </div>
+      )}
+      
+      {userLimit.imagesGenerated >= userLimit.imagesLimit ? (
+        <div className="text-sm">
+          <div className="flex items-center gap-2 text-amber-400 mb-1">
+            <Clock className="h-3.5 w-3.5" />
+            <span>Quota resets in: {timeUntilReset}</span>
+          </div>
+          <p className="text-gray-300">
+            <Link to="/pricing" className="text-imaginexus-accent1 hover:underline">Upgrade your plan</Link> for more generations.
+          </p>
+        </div>
+      ) : (
         <div className="text-sm text-gray-300">
-          {remainingImages === 0 ? (
-            <p>You've reached your daily limit. <Link to="/pricing" className="text-imaginexus-accent1 hover:underline">Upgrade your plan</Link> or wait until tomorrow for your limit to reset.</p>
-          ) : (
-            <p>You have <span className="text-white font-medium">{remainingImages}</span> generations remaining today.</p>
-          )}
+          <p>You have <span className="text-white font-medium">{remainingImages}</span> generations remaining today.</p>
+          <div className="flex items-center gap-1 text-gray-400 mt-1">
+            <Clock className="h-3 w-3" />
+            <span className="text-xs">Resets in {timeUntilReset}</span>
+          </div>
         </div>
       )}
     </div>

@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Sparkles, Zap, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Loader2, Sparkles, Zap, Upload, Image as ImageIcon, AlertCircle, RefreshCw } from 'lucide-react';
 import { 
   generateImage, 
   enhancePrompt, 
@@ -21,6 +22,8 @@ import ImageUploader from '../components/ImageUploader';
 import SubscriptionInfo from '../components/SubscriptionInfo';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import FirebaseConfigManager from '../components/FirebaseConfigManager';
+import GalleryGrid from '../components/GalleryGrid'; 
+import { motion } from 'framer-motion';
 
 const Index = () => {
   const { currentUser } = useAuth();
@@ -35,30 +38,38 @@ const Index = () => {
   const [userSubscription, setUserSubscription] = useState<UserLimit | null>(null);
   const [activeTab, setActiveTab] = useState('text-to-image');
   const [hasFirebaseError, setHasFirebaseError] = useState(false);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
   
   useEffect(() => {
-    async function loadUserData() {
-      if (currentUser) {
-        try {
-          setHasFirebaseError(false);
-          
-          const subscription = await getUserSubscription(currentUser.uid);
-          setUserSubscription(subscription);
-          
-          const images = await getLatestUserImages(currentUser.uid, 4);
-          setRecentImages(images);
-        } catch (error: any) {
-          console.error('Error loading user data:', error);
-          
-          if (error.code === 'permission-denied' || error.message?.includes('permission')) {
-            setHasFirebaseError(true);
-          }
-        }
-      }
-    }
-    
     loadUserData();
   }, [currentUser]);
+  
+  async function loadUserData() {
+    if (!currentUser) {
+      setUserSubscription(null);
+      setRecentImages([]);
+      return;
+    }
+    
+    try {
+      setIsLoadingImages(true);
+      setHasFirebaseError(false);
+      
+      const subscription = await getUserSubscription(currentUser.uid);
+      setUserSubscription(subscription);
+      
+      const images = await getLatestUserImages(currentUser.uid, 4);
+      setRecentImages(images);
+    } catch (error: any) {
+      console.error('Error loading user data:', error);
+      
+      if (error.code === 'permission-denied' || error.message?.includes('permission')) {
+        setHasFirebaseError(true);
+      }
+    } finally {
+      setIsLoadingImages(false);
+    }
+  };
   
   const handleEnhancePrompt = async () => {
     if (!prompt.trim()) {
@@ -106,11 +117,8 @@ const Index = () => {
       
       setGeneratedImage(image);
       
-      const images = await getLatestUserImages(currentUser.uid, 4);
-      setRecentImages(images);
-      
-      const subscription = await getUserSubscription(currentUser.uid);
-      setUserSubscription(subscription);
+      // Reload user data to get updated limits
+      await loadUserData();
       
     } catch (error: any) {
       console.error('Error generating image:', error);
@@ -132,6 +140,9 @@ const Index = () => {
     
     setActiveTab('text-to-image');
     setPrompt(analyzedPrompt);
+    
+    // Reload user data to get updated limits
+    loadUserData();
   };
   
   const getAvailableStyles = () => {
@@ -139,16 +150,33 @@ const Index = () => {
     
     switch (userSubscription.tier) {
       case 'FREE':
-        return ['photorealistic', 'digital-art', 'illustration'];
+        return ['photorealistic', 'digital-art', 'illustration', 'ghibli'];
       case 'BASIC':
-        return ['photorealistic', 'digital-art', 'illustration', '3d-render', 'pixel-art'];
+        return ['photorealistic', 'digital-art', 'illustration', '3d-render', 'pixel-art', 'ghibli'];
       case 'PRO':
         return ['photorealistic', 'digital-art', 'illustration', '3d-render', 'pixel-art', 'anime', 'ghibli'];
       case 'UNLIMITED':
         return ['photorealistic', 'digital-art', 'illustration', '3d-render', 'pixel-art', 'anime', 'ghibli', 'watercolor', 'oil-painting', 'concept-art'];
       default:
-        return ['photorealistic', 'digital-art', 'illustration'];
+        return ['photorealistic', 'digital-art', 'illustration', 'ghibli'];
     }
+  };
+  
+  const isGenerationDisabled = () => {
+    if (!currentUser) return true;
+    if (!userSubscription) return false;
+    
+    // Check general image limit
+    if (userSubscription.imagesGenerated >= userSubscription.imagesLimit) return true;
+    
+    // Check Ghibli specific limit if applicable
+    if (style === 'ghibli') {
+      const ghibliUsed = userSubscription.ghibliImagesGenerated || 0;
+      const ghibliLimit = userSubscription.ghibliImagesLimit || 2;
+      if (ghibliUsed >= ghibliLimit) return true;
+    }
+    
+    return false;
   };
   
   return (
@@ -171,24 +199,35 @@ const Index = () => {
           </div>
         )}
         
-        <section className="py-16 md:py-24 text-center">
+        <section className="py-8 md:py-12 text-center">
           <div className="container px-4 md:px-6">
-            <h2 className="text-sm md:text-base text-imaginexus-accent2 mb-2">Welcome to the future of image creation</h2>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6">
-              Transform Your Ideas into<br />
-              <span className="gradient-text">Stunning Visuals</span>
-            </h1>
-            <p className="text-gray-300 md:text-lg max-w-3xl mx-auto mb-12">
-              Experience the power of AI-driven image generation. Create beautiful, unique visuals
-              from your descriptions in seconds with Imagicaaa's state-of-the-art technology.
-            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h2 className="text-sm md:text-base text-imaginexus-accent2 mb-2">Create stunning images instantly</h2>
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6">
+                Transform Your Ideas into<br />
+                <span className="gradient-text">Stunning Visuals</span>
+              </h1>
+              <p className="text-gray-300 md:text-lg max-w-3xl mx-auto mb-8">
+                Generate beautiful, unique visuals from your descriptions in seconds with our
+                state-of-the-art AI technology.
+              </p>
+            </motion.div>
             
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
               <div className="hidden lg:block lg:col-span-1">
                 {currentUser && userSubscription ? (
                   <SubscriptionInfo userLimit={userSubscription} />
                 ) : (
-                  <div className="bg-imaginexus-darker rounded-lg border border-gray-800 p-4 text-center">
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-imaginexus-darker rounded-lg border border-gray-800 p-4 text-center"
+                  >
                     <h3 className="text-white font-medium mb-2">Sign in to get started</h3>
                     <p className="text-gray-400 text-sm mb-4">Create an account to generate and save images</p>
                     <Button 
@@ -197,7 +236,7 @@ const Index = () => {
                     >
                       Sign In
                     </Button>
-                  </div>
+                  </motion.div>
                 )}
                 
                 <div className="mt-4 bg-imaginexus-darker rounded-lg border border-gray-800 p-4">
@@ -237,7 +276,12 @@ const Index = () => {
                   
                   <TabsContent value="text-to-image">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      <div className="space-y-6">
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="space-y-6"
+                      >
                         <div className="relative">
                           <Textarea
                             value={prompt}
@@ -343,17 +387,25 @@ const Index = () => {
                           </div>
                         </div>
                         
+                        {/* Mobile subscription info */}
                         {currentUser && userSubscription && (
                           <div className="lg:hidden mb-4">
                             <SubscriptionInfo userLimit={userSubscription} />
                           </div>
                         )}
                         
+                        {style === 'ghibli' && userSubscription && (
+                          <div className="bg-indigo-900/20 border border-indigo-600/30 p-3 rounded-lg">
+                            <p className="text-sm text-indigo-200">
+                              <span className="font-medium">Ghibli Style:</span> You've used {userSubscription.ghibliImagesGenerated || 0} of {userSubscription.ghibliImagesLimit} daily Ghibli images
+                            </p>
+                          </div>
+                        )}
+                        
                         <div className="flex space-x-4">
                           <Button 
                             onClick={() => handleGenerateImage(false)}
-                            disabled={isGenerating || !prompt.trim() || !currentUser || 
-                              (userSubscription && userSubscription.imagesGenerated >= userSubscription.imagesLimit)}
+                            disabled={isGenerating || !prompt.trim() || !currentUser || isGenerationDisabled()}
                             className="flex-1 gradient-btn text-white py-6 rounded-md"
                           >
                             {isGenerating ? (
@@ -366,8 +418,7 @@ const Index = () => {
                           
                           <Button 
                             onClick={() => handleGenerateImage(true)}
-                            disabled={isGenerating || !prompt.trim() || !currentUser || 
-                              (userSubscription && userSubscription.imagesGenerated >= userSubscription.imagesLimit)}
+                            disabled={isGenerating || !prompt.trim() || !currentUser || isGenerationDisabled()}
                             className="flex-1 bg-imaginexus-accent2 hover:bg-imaginexus-accent2/90 text-white py-6 rounded-md"
                           >
                             {isGenerating ? (
@@ -383,11 +434,13 @@ const Index = () => {
                             )}
                           </Button>
                         </div>
-                      </div>
+                      </motion.div>
                       
                       <div className="flex items-center justify-center bg-imaginexus-darker rounded-md p-4 min-h-[350px] border border-gray-800">
                         {generatedImage ? (
-                          <img 
+                          <motion.img 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                             src={generatedImage.imageUrl} 
                             alt={generatedImage.prompt} 
                             className="max-w-full max-h-full object-contain rounded"
@@ -431,7 +484,9 @@ const Index = () => {
                       
                       <div className="flex items-center justify-center bg-imaginexus-darker rounded-md p-4 min-h-[350px] border border-gray-800">
                         {generatedImage ? (
-                          <img 
+                          <motion.img 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                             src={generatedImage.imageUrl} 
                             alt={generatedImage.prompt} 
                             className="max-w-full max-h-full object-contain rounded"
@@ -451,52 +506,52 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="mt-16">
-              <h2 className="text-2xl font-bold text-white mb-6">Your Recent Creations</h2>
-              
-              <div className="flex flex-wrap gap-4 justify-center mb-8">
-                {currentUser && recentImages.length > 0 ? (
-                  recentImages.map((image) => (
-                    <div 
-                      key={image.id}
-                      className="w-48 h-48 bg-imaginexus-darker rounded-md overflow-hidden flex items-center justify-center border border-gray-800 hover:border-imaginexus-accent1 transition-all"
-                    >
-                      <img 
-                        src={image.imageUrl} 
-                        alt={image.prompt} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))
-                ) : (
-                  Array(4).fill(null).map((_, index) => (
-                    <div 
-                      key={index}
-                      className="w-48 h-48 bg-imaginexus-darker rounded-md overflow-hidden flex items-center justify-center border border-gray-800 hover:border-imaginexus-accent1 transition-all"
-                    >
-                      <svg 
-                        className="w-12 h-12 text-gray-700" 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  ))
+            {currentUser && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-16"
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-white">Your Recent Creations</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={loadUserData}
+                    className="text-gray-300 hover:text-white"
+                    disabled={isLoadingImages}
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingImages ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                </div>
+                
+                <div className="mb-8">
+                  <GalleryGrid 
+                    images={recentImages} 
+                    emptyMessage="You haven't created any images yet. Start generating!"
+                    isLoading={isLoadingImages}
+                  />
+                </div>
+                
+                {recentImages.length > 0 && (
+                  <Link to="/gallery">
+                    <Button className="bg-transparent border border-imaginexus-accent1 text-white hover:bg-imaginexus-accent1/20">
+                      View Full Gallery
+                    </Button>
+                  </Link>
                 )}
-              </div>
-              
-              <Link to="/gallery">
-                <Button className="bg-transparent border border-imaginexus-accent1 text-white hover:bg-imaginexus-accent1/20">
-                  View Full Gallery
-                </Button>
-              </Link>
-            </div>
+              </motion.div>
+            )}
             
-            <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-left"
+            >
+              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800 transform transition-all hover:scale-105 hover:shadow-glow">
                 <h3 className="text-xl font-bold text-white mb-3">State-of-the-Art AI</h3>
                 <p className="text-gray-400">
                   Our platform uses cutting-edge AI technology to generate stunning, high-resolution 
@@ -504,7 +559,7 @@ const Index = () => {
                 </p>
               </div>
               
-              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800">
+              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800 transform transition-all hover:scale-105 hover:shadow-glow">
                 <h3 className="text-xl font-bold text-white mb-3">Multiple Styles</h3>
                 <p className="text-gray-400">
                   Choose from multiple artistic styles including Ghibli animation, photorealistic renders, 
@@ -512,17 +567,23 @@ const Index = () => {
                 </p>
               </div>
               
-              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800">
+              <div className="bg-imaginexus-darker p-6 rounded-lg border border-gray-800 transform transition-all hover:scale-105 hover:shadow-glow">
                 <h3 className="text-xl font-bold text-white mb-3">Image Analysis</h3>
                 <p className="text-gray-400">
                   Upload your own images and our AI will analyze them to create similar images 
                   or transform them into different artistic styles.
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>
+      
+      <style jsx>{`
+        .shadow-glow:hover {
+          box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+        }
+      `}</style>
     </div>
   );
 };

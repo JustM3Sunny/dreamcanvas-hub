@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { motion } from 'framer-motion';
 
 interface ImageUploaderProps {
   onImageGenerated: (imageUrl: string, prompt: string) => void;
@@ -108,34 +109,39 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
       />
       
       {!previewUrl ? (
-        <Card 
-          className={`border-dashed border-2 ${uploadError ? 'border-red-500' : 'border-gray-400'} bg-transparent hover:bg-gray-900/20 transition-colors cursor-pointer`} 
-          onClick={triggerFileInput}
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
         >
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            {uploadError ? (
-              <>
-                <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-                <p className="text-red-500 text-center mb-2">
-                  {uploadError}
-                </p>
-                <p className="text-gray-500 text-sm text-center">
-                  Click to try again
-                </p>
-              </>
-            ) : (
-              <>
-                <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-300 text-center mb-2">
-                  Click to upload an image for analysis
-                </p>
-                <p className="text-gray-500 text-sm text-center">
-                  JPG, PNG, or GIF (max 5MB)
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+          <Card 
+            className={`border-dashed border-2 ${uploadError ? 'border-red-500' : 'border-gray-400'} bg-transparent hover:bg-gray-900/20 transition-colors cursor-pointer`} 
+            onClick={triggerFileInput}
+          >
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              {uploadError ? (
+                <>
+                  <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+                  <p className="text-red-500 text-center mb-2">
+                    {uploadError}
+                  </p>
+                  <p className="text-gray-500 text-sm text-center">
+                    Click to try again
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Upload className="h-12 w-12 text-gray-400 mb-4" />
+                  <p className="text-gray-300 text-center mb-2">
+                    Click to upload an image for analysis
+                  </p>
+                  <p className="text-gray-500 text-sm text-center">
+                    JPG, PNG, or GIF (max 5MB)
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
       ) : (
         <Card className="border bg-imaginexus-darker">
           <CardContent className="p-4">
@@ -152,7 +158,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
             </div>
             
             <div className="relative rounded-md overflow-hidden aspect-square mb-4">
-              <img 
+              <motion.img 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 src={previewUrl} 
                 alt="Preview" 
                 className="w-full h-full object-cover"
@@ -178,10 +186,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated }) => {
             </div>
             
             {analyzedPrompt && (
-              <div className="mb-4">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 bg-gray-800/50 p-3 rounded-md border border-gray-700"
+              >
                 <h4 className="text-gray-300 text-sm mb-1">AI Analysis:</h4>
-                <p className="text-white text-sm bg-gray-800 p-3 rounded-md">{analyzedPrompt}</p>
-              </div>
+                <p className="text-white text-sm">{analyzedPrompt}</p>
+              </motion.div>
             )}
             
             <Button 

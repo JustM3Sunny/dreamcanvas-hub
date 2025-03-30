@@ -40,6 +40,8 @@ export interface UserLimit {
   lastRefresh: Date;
   totalTokensUsed?: number;
   tokensLimit?: number;
+  ghibliImagesGenerated?: number;
+  ghibliImagesLimit?: number;
 }
 
 export interface UsageStats {
@@ -56,24 +58,28 @@ const IMAGE_TIERS = {
     tokens: 25000,
     resolution: "512x512",
     styles: ["photorealistic", "digital-art", "illustration"],
+    ghibliLimit: 2
   },
   BASIC: {
     limit: 15,
     tokens: 100000,
     resolution: "1024x1024",
     styles: ["photorealistic", "digital-art", "illustration", "3d-render", "pixel-art"],
+    ghibliLimit: 3
   },
   PRO: {
     limit: 50,
     tokens: 500000,
     resolution: "2048x2048",
     styles: ["photorealistic", "digital-art", "illustration", "3d-render", "pixel-art", "anime", "ghibli"],
+    ghibliLimit: 5
   },
   UNLIMITED: {
     limit: 1000,
     tokens: 2000000,
     resolution: "4096x4096",
     styles: ["photorealistic", "digital-art", "illustration", "3d-render", "pixel-art", "anime", "ghibli", "watercolor", "oil-painting", "concept-art", "cyberpunk", "fantasy"],
+    ghibliLimit: 10
   }
 };
 
@@ -92,6 +98,17 @@ const initGemini = () => {
   }
 };
 
+const shouldResetLimit = (lastRefresh: Date): boolean => {
+  if (!lastRefresh) return true;
+  
+  const lastRefreshDate = new Date(lastRefresh);
+  const now = new Date();
+  
+  // Check if it's been at least 24 hours since last refresh
+  const hoursSinceLastRefresh = (now.getTime() - lastRefreshDate.getTime()) / (1000 * 60 * 60);
+  return hoursSinceLastRefresh >= 24;
+};
+
 export async function checkUserLimit(userId: string): Promise<UserLimit | null> {
   try {
     const userLimitRef = doc(db, 'userLimits', userId);
@@ -101,17 +118,21 @@ export async function checkUserLimit(userId: string): Promise<UserLimit | null> 
       const userData = userLimitDoc.data() as UserLimit;
       
       const lastRefresh = userData.lastRefresh ? new Date(userData.lastRefresh) : new Date(0);
-      const today = new Date();
-      if (lastRefresh.toDateString() !== today.toDateString()) {
-        await updateDoc(userLimitRef, {
+      
+      // Check if we need to reset the limit (24 hours have passed)
+      if (shouldResetLimit(lastRefresh)) {
+        const updatedData = {
           imagesGenerated: 0,
-          lastRefresh: today
-        });
+          ghibliImagesGenerated: 0,
+          lastRefresh: new Date()
+        };
+        
+        await updateDoc(userLimitRef, updatedData);
         
         return {
           ...userData,
-          imagesGenerated: 0,
-          lastRefresh: today
+          ...updatedData,
+          id: userLimitDoc.id
         };
       }
       
@@ -127,7 +148,9 @@ export async function checkUserLimit(userId: string): Promise<UserLimit | null> 
         totalTokensUsed: 0,
         tokensLimit: IMAGE_TIERS.FREE.tokens,
         tier: 'FREE',
-        lastRefresh: new Date()
+        lastRefresh: new Date(),
+        ghibliImagesGenerated: 0,
+        ghibliImagesLimit: IMAGE_TIERS.FREE.ghibliLimit
       };
       
       try {
@@ -153,21 +176,30 @@ export async function checkUserLimit(userId: string): Promise<UserLimit | null> 
         totalTokensUsed: 0,
         tokensLimit: IMAGE_TIERS.FREE.tokens,
         tier: 'FREE',
-        lastRefresh: new Date()
+        lastRefresh: new Date(),
+        ghibliImagesGenerated: 0,
+        ghibliImagesLimit: IMAGE_TIERS.FREE.ghibliLimit
       };
     }
     return null;
   }
 }
 
-async function incrementUserGenerationCount(userId: string, tokensUsed: number = 0): Promise<boolean> {
+async function incrementUserGenerationCount(userId: string, style: string, tokensUsed: number = 0): Promise<boolean> {
   try {
     const userLimitRef = doc(db, 'userLimits', userId);
     
-    await updateDoc(userLimitRef, {
+    const updateData: Record<string, any> = {
       imagesGenerated: increment(1),
       totalTokensUsed: increment(tokensUsed)
-    });
+    };
+    
+    // If this is a ghibli style image, increment the ghibli counter too
+    if (style === 'ghibli') {
+      updateData.ghibliImagesGenerated = increment(1);
+    }
+    
+    await updateDoc(userLimitRef, updateData);
     
     await updateGenerationAnalytics();
     
@@ -305,7 +337,17 @@ export async function generateImage(
     }
     
     if (userLimit.imagesGenerated >= userLimit.imagesLimit) {
-      throw new Error(`You've reached your daily limit of ${userLimit.imagesLimit} images. Upgrade your plan for more!`);
+      throw new Error(`You've reached your daily limit of ${userLimit.imagesLimit} images. Your quota will renew in 24 hours.`);
+    }
+    
+    // Check ghibli limit if applicable
+    if (style === 'ghibli') {
+      const ghibliLimit = IMAGE_TIERS[userLimit.tier as keyof typeof IMAGE_TIERS].ghibliLimit || 2;
+      const ghibliUsed = userLimit.ghibliImagesGenerated || 0;
+      
+      if (ghibliUsed >= ghibliLimit) {
+        throw new Error(`You've reached your daily limit of ${ghibliLimit} Ghibli style images. Your quota will renew in 24 hours.`);
+      }
     }
     
     let finalPrompt = prompt;
@@ -313,6 +355,93 @@ export async function generateImage(
     
     if (style === 'ghibli') {
       finalPrompt = `Create a Studio Ghibli style animation scene with: ${prompt}. Use Ghibli's signature soft colors, detailed backgrounds, and whimsical elements.`;
+      
+      // Use the Gemini specialized model for Ghibli
+      const genAI = initGemini();
+      if (genAI) {
+        try {
+          toast.info("Generating Studio Ghibli style image with Gemini...");
+          
+          const model = genAI.getGenerativeModel({ 
+            model: "gemini-2.0-flash-exp-image-generation",
+            safetySettings: [
+              {
+                category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+              },
+              {
+                category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+              },
+              {
+                category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+              },
+            ],
+          });
+          
+          const chatSession = model.startChat({
+            history: [],
+            generationConfig: {
+              temperature: 1,
+              topP: 0.95,
+              topK: 40,
+              maxOutputTokens: 8192,
+              responseModalities: ["image", "text"],
+              responseMimeType: "text/plain",
+            },
+          });
+          
+          const result = await chatSession.sendMessage(
+            `Generate a Studio Ghibli style animation scene with: ${prompt}. Use Ghibli's signature soft colors, detailed backgrounds, and whimsical elements.`
+          );
+          
+          const candidates = result.response.candidates || [];
+          for (let candidate_index = 0; candidate_index < candidates.length; candidate_index++) {
+            for (let part_index = 0; part_index < (candidates[candidate_index].content?.parts?.length || 0); part_index++) {
+              const part = candidates[candidate_index].content?.parts?.[part_index];
+              if (part && part.inlineData) {
+                try {
+                  const imageRef = ref(storage, `gemini/${userId}/${Date.now()}_ghibli.jpg`);
+                  await uploadString(imageRef, part.inlineData.data, 'base64', { contentType: part.inlineData.mimeType });
+                  const imageUrl = await getDownloadURL(imageRef);
+                  
+                  // Increment user counts
+                  await incrementUserGenerationCount(userId, style, 0);
+                  await trackStyleUsage(style);
+                  await trackPromptTerms(prompt);
+                  
+                  const imageData: GeneratedImage = {
+                    imageUrl: imageUrl,
+                    prompt,
+                    style,
+                    aspectRatio,
+                    createdAt: Date.now(),
+                    userId,
+                    model: "gemini-2.0-flash-exp-image-generation",
+                    usageTokens: 0
+                  };
+                  
+                  const docRef = await addDoc(collection(db, 'images'), imageData);
+                  toast.success("Studio Ghibli image generated successfully!");
+                  
+                  return {
+                    ...imageData,
+                    id: docRef.id
+                  };
+                } catch (err) {
+                  console.error("Error processing Gemini image:", err);
+                }
+              }
+            }
+          }
+          
+          // If we get here, we didn't find an image in the response
+          console.warn("No image found in Gemini response, falling back to standard generation");
+        } catch (error) {
+          console.error("Error generating with Gemini specialized model:", error);
+        }
+      }
     } else if (style === 'anime') {
       finalPrompt = `Generate an anime-style image with: ${prompt}. Use vibrant colors, distinctive anime character features, and dynamic composition.`;
     }
@@ -402,7 +531,7 @@ export async function generateImage(
     
     console.log("Image URL:", imageUrl);
     
-    await incrementUserGenerationCount(userId, tokensUsed);
+    await incrementUserGenerationCount(userId, style, tokensUsed);
     
     await trackStyleUsage(style);
     await trackPromptTerms(prompt);
@@ -723,7 +852,9 @@ export async function getUserSubscription(userId: string): Promise<UserLimit> {
       totalTokensUsed: 0,
       tokensLimit: IMAGE_TIERS.FREE.tokens,
       tier: 'FREE',
-      lastRefresh: new Date()
+      lastRefresh: new Date(),
+      ghibliImagesGenerated: 0,
+      ghibliImagesLimit: IMAGE_TIERS.FREE.ghibliLimit
     };
   }
   return userLimit;
@@ -741,12 +872,31 @@ export async function updateUserSubscription(userId: string, tier: string): Prom
     await updateDoc(userLimitRef, {
       tier: tier,
       imagesLimit: tierConfig.limit,
-      tokensLimit: tierConfig.tokens
+      tokensLimit: tierConfig.tokens,
+      ghibliImagesLimit: tierConfig.ghibliLimit
     });
     
     return true;
   } catch (error) {
     console.error("Error updating user subscription:", error);
     return false;
+  }
+}
+
+export function getRemainingTimeUntilReset(lastRefresh: Date): string {
+  const now = new Date();
+  const lastRefreshDate = new Date(lastRefresh);
+  const resetTime = new Date(lastRefreshDate.getTime() + 24 * 60 * 60 * 1000); // 24 hours after last refresh
+  
+  const diffMs = resetTime.getTime() - now.getTime();
+  if (diffMs <= 0) return "Available now";
+  
+  const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (diffHrs > 0) {
+    return `${diffHrs}h ${diffMins}m`;
+  } else {
+    return `${diffMins}m`;
   }
 }
