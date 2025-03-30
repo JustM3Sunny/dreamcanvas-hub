@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider
 } from 'firebase/auth';
-import { auth, googleProvider } from '../lib/firebase';
+import { auth, googleProvider, isCurrentDomainAuthorized } from '../lib/firebase';
 import { toast } from 'sonner';
 
 interface AuthContextType {
@@ -42,6 +42,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
+      // Check if current domain is likely authorized before attempting sign in
+      if (!isCurrentDomainAuthorized()) {
+        const currentDomain = window.location.hostname;
+        toast.warning(
+          <div className="space-y-2">
+            <p>This domain may not be authorized for Firebase authentication</p>
+            <p className="text-xs text-gray-300">
+              Add <span className="font-mono bg-gray-800 px-1 rounded">{currentDomain}</span> to Firebase Console ➝ Authentication ➝ Settings ➝ Authorized domains
+            </p>
+          </div>, 
+          { duration: 8000 }
+        );
+      }
+
       await signInWithPopup(auth, googleProvider);
       toast.success('Successfully signed in!');
     } catch (error: any) {
@@ -58,6 +72,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           </div>, 
           { duration: 8000 }
         );
+      } else if (error.code === 'auth/popup-blocked') {
+        toast.error('Pop-up was blocked by your browser. Please allow pop-ups for this site.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        toast.info('Sign-in cancelled.');
       } else {
         toast.error(`Failed to sign in: ${error.message}`);
       }

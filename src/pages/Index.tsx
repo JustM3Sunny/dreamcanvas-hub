@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Sparkles, Zap, Upload, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Sparkles, Zap, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { 
   generateImage, 
   enhancePrompt, 
@@ -19,6 +19,8 @@ import Navbar from '../components/Navbar';
 import { Link } from 'react-router-dom';
 import ImageUploader from '../components/ImageUploader';
 import SubscriptionInfo from '../components/SubscriptionInfo';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import FirebaseConfigManager from '../components/FirebaseConfigManager';
 
 const Index = () => {
   const { currentUser } = useAuth();
@@ -32,18 +34,25 @@ const Index = () => {
   const [recentImages, setRecentImages] = useState<GeneratedImage[]>([]);
   const [userSubscription, setUserSubscription] = useState<UserLimit | null>(null);
   const [activeTab, setActiveTab] = useState('text-to-image');
+  const [hasFirebaseError, setHasFirebaseError] = useState(false);
   
   useEffect(() => {
     async function loadUserData() {
       if (currentUser) {
         try {
+          setHasFirebaseError(false);
+          
           const subscription = await getUserSubscription(currentUser.uid);
           setUserSubscription(subscription);
           
           const images = await getLatestUserImages(currentUser.uid, 4);
           setRecentImages(images);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error loading user data:', error);
+          
+          if (error.code === 'permission-denied' || error.message?.includes('permission')) {
+            setHasFirebaseError(true);
+          }
         }
       }
     }
@@ -147,6 +156,21 @@ const Index = () => {
       <Navbar />
       
       <main className="flex-1 flex flex-col">
+        {hasFirebaseError && (
+          <div className="container px-4 md:px-6 mt-6">
+            <Alert className="bg-red-900/20 border-red-600/30">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+              <AlertTitle className="text-red-300">Firebase Permissions Error</AlertTitle>
+              <AlertDescription className="text-red-200/80">
+                There seems to be an issue with Firebase permissions. Please check your Firebase security rules or configuration.
+              </AlertDescription>
+              <div className="mt-2">
+                <FirebaseConfigManager />
+              </div>
+            </Alert>
+          </div>
+        )}
+        
         <section className="py-16 md:py-24 text-center">
           <div className="container px-4 md:px-6">
             <h2 className="text-sm md:text-base text-imaginexus-accent2 mb-2">Welcome to the future of image creation</h2>

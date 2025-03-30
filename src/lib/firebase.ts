@@ -2,7 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 import { toast } from 'sonner';
 
@@ -38,6 +38,17 @@ export const googleProvider = new GoogleAuthProvider();
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 
+// Enable offline persistence where supported
+if (typeof window !== 'undefined') {
+  enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+      console.warn('The current browser does not support offline persistence.');
+    }
+  });
+}
+
 // Initialize Analytics only in browser environment
 let analytics = null;
 if (typeof window !== 'undefined') {
@@ -55,6 +66,19 @@ const currentDomain = typeof window !== 'undefined' ? window.location.hostname :
 // Log Firebase configuration status
 console.log("Firebase initialized with project:", firebaseConfig.projectId);
 console.log("Current domain:", currentDomain);
+
+// Helper function to check if the current domain is authorized
+export const isCurrentDomainAuthorized = () => {
+  // Common Firebase authorized domains
+  const commonAuthorizedDomains = [
+    'localhost',
+    firebaseConfig.authDomain,
+    `${firebaseConfig.projectId}.web.app`,
+    `${firebaseConfig.projectId}.firebaseapp.com`
+  ];
+  
+  return commonAuthorizedDomains.includes(currentDomain);
+};
 
 // Check if Firebase is properly configured with real values
 if (firebaseConfig.apiKey === "AIzaSyB76w-iL5EHs3zBDgn7WEfodneAhoqt6qY") {

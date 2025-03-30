@@ -1,4 +1,3 @@
-
 import { Client } from "@gradio/client";
 import { toast } from "sonner";
 import { ref, uploadBytes, getDownloadURL, listAll, uploadString } from 'firebase/storage';
@@ -115,11 +114,31 @@ export async function checkUserLimit(userId: string): Promise<UserLimit | null> 
         lastRefresh: new Date()
       };
       
-      await setDoc(userLimitRef, newUserLimit);
-      return newUserLimit;
+      try {
+        await setDoc(userLimitRef, newUserLimit);
+        return newUserLimit;
+      } catch (error: any) {
+        console.error("Error creating user limits:", error);
+        if (error.code === 'permission-denied') {
+          toast.error("Firebase permission denied. Please check your Firestore security rules.");
+          throw new Error("Firebase permissions issue - see security rules in settings");
+        }
+        throw error;
+      }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error checking user limits:", error);
+    if (error.code === 'permission-denied') {
+      toast.error("Firebase permission denied. Please check your Firestore security rules in settings.");
+      // Return a default limit to prevent app from breaking completely
+      return {
+        userId,
+        imagesGenerated: 0,
+        imagesLimit: IMAGE_TIERS.FREE.limit,
+        tier: 'FREE',
+        lastRefresh: new Date()
+      };
+    }
     return null;
   }
 }
@@ -466,8 +485,11 @@ export async function getLatestUserImages(userId: string, count: number = 4): Pr
     });
     
     return images;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching latest user images:", error);
+    if (error.code === 'permission-denied') {
+      toast.error("Firebase permission denied. Please check your Firestore security rules in settings.");
+    }
     return [];
   }
 }
