@@ -573,11 +573,13 @@ const Index = () => {
         </section>
       </main>
       
-      <style jsx>{`
+      <style>
+        {`
         .shadow-glow:hover {
           box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
