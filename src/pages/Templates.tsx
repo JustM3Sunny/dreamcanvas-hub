@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -16,7 +15,7 @@ import {
   Filter, 
   Image as ImageIcon, 
   Sparkles, 
-  Mountains, 
+  Mountain, 
   Building, 
   Users, 
   Rocket, 
@@ -28,7 +27,7 @@ import {
 const Templates = () => {
   const categories = [
     { name: 'All Templates', icon: <ImageIcon size={18} /> },
-    { name: 'Landscapes', icon: <Mountains size={18} /> },
+    { name: 'Landscapes', icon: <Mountain size={18} /> },
     { name: 'Architecture', icon: <Building size={18} /> },
     { name: 'Characters', icon: <Users size={18} /> },
     { name: 'Sci-Fi', icon: <Rocket size={18} /> },

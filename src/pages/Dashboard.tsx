@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,9 +31,9 @@ const Dashboard = () => {
   
   // Mock recent generations data
   const recentGenerations = [
-    { id: 1, prompt: "A beautiful sunset over mountains", date: "Today, 2:30 PM", style: "Realistic" },
-    { id: 2, prompt: "Cyberpunk city with neon lights", date: "Today, 1:15 PM", style: "Futuristic" },
-    { id: 3, prompt: "Forest landscape with a small cabin", date: "Yesterday, 4:45 PM", style: "Ghibli" },
+    { id: 1, prompt: "A beautiful sunset over mountains", date: new Date(), style: "Realistic" },
+    { id: 2, prompt: "Cyberpunk city with neon lights", date: new Date(), style: "Futuristic" },
+    { id: 3, prompt: "Forest landscape with a small cabin", date: new Date(), style: "Ghibli" },
   ];
 
   return (

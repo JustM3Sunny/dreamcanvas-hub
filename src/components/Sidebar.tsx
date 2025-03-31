@@ -11,7 +11,8 @@ import {
   Users,
   MessageSquare,
   FileText,
-  LifeBuoy
+  LifeBuoy,
+  Mountain
 } from 'lucide-react';
 
 const Sidebar = () => {

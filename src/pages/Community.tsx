@@ -1,20 +1,15 @@
-
 import React from 'react';
+import { 
+  Users, 
+  TrendingUp, 
+  MessageSquare, 
+  Heart, 
+  Clock, 
+  Image 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import {
-  Heart,
-  MessageSquare,
-  Share2,
-  Star,
-  User,
-  Calendar,
-  Sparkles,
-  Users,
-  Trending,
-  Clock
-} from 'lucide-react';
 
 const Community = () => {
   const posts = [
@@ -94,7 +89,6 @@ const Community = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content */}
         <div className="lg:col-span-2">
           <Tabs defaultValue="recent">
             <TabsList className="bg-imaginexus-darker border border-white/10 mb-6">
@@ -109,14 +103,14 @@ const Community = () => {
                 value="trending"
                 className="data-[state=active]:bg-white/10 data-[state=active]:text-white"
               >
-                <Trending className="mr-2 h-4 w-4" />
+                <TrendingUp className="mr-2 h-4 w-4" />
                 Trending
               </TabsTrigger>
               <TabsTrigger
                 value="starred"
                 className="data-[state=active]:bg-white/10 data-[state=active]:text-white"
               >
-                <Star className="mr-2 h-4 w-4" />
+                <Heart className="mr-2 h-4 w-4" />
                 Starred
               </TabsTrigger>
             </TabsList>
@@ -184,7 +178,7 @@ const Community = () => {
             
             <TabsContent value="trending" className="space-y-6 mt-0">
               <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
-                <Trending className="h-12 w-12 mx-auto text-gray-400" />
+                <TrendingUp className="h-12 w-12 mx-auto text-gray-400" />
                 <h3 className="text-xl font-medium mt-4">Trending content</h3>
                 <p className="text-gray-400 mt-2">Discover what's popular in the community right now</p>
               </div>
@@ -192,7 +186,7 @@ const Community = () => {
             
             <TabsContent value="starred" className="space-y-6 mt-0">
               <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
-                <Star className="h-12 w-12 mx-auto text-gray-400" />
+                <Heart className="h-12 w-12 mx-auto text-gray-400" />
                 <h3 className="text-xl font-medium mt-4">Your starred content</h3>
                 <p className="text-gray-400 mt-2">Save your favorite posts to find them easily later</p>
               </div>
@@ -200,7 +194,6 @@ const Community = () => {
           </Tabs>
         </div>
         
-        {/* Sidebar */}
         <div className="space-y-6">
           <div className="rounded-lg border border-white/10 bg-imaginexus-darker p-5">
             <h3 className="font-medium flex items-center">
