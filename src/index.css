@@ -5,25 +5,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 3%;
+    --background: 0 0% 0%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 4%;
+    --card: 0 0% 0%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 3%;
+    --popover: 0 0% 0%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 252 80% 74%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 7%;
+    --secondary: 0 0% 4%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 9%;
+    --muted: 0 0% 4%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 0 0% 7%;
+    --accent: 0 0% 4%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 63% 31%;
@@ -43,7 +43,7 @@
   }
 
   body {
-    @apply bg-imaginexus-dark text-foreground;
+    @apply bg-black text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -106,7 +106,7 @@
 }
 
 .glass-panel {
-  @apply border border-white/10 bg-white/5 backdrop-blur-lg;
+  @apply border border-white/5 bg-black/80 backdrop-blur-lg;
 }
 
 .sidebar-item {
@@ -122,7 +122,7 @@
 }
 
 .feature-item {
-  @apply flex flex-col items-center gap-3 p-6 rounded-xl border border-border bg-secondary;
+  @apply flex flex-col items-center gap-3 p-6 rounded-xl border border-white/5 bg-black/50;
 }
 
 .icon-box {
@@ -130,13 +130,42 @@
 }
 
 .badge-blue {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300;
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900/50 text-blue-300;
 }
 
 .badge-green {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-300;
 }
 
 .badge-purple {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300;
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-900/50 text-purple-300;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Neo-glass morphism */
+.neo-blur {
+  @apply backdrop-blur-lg bg-black/40 border border-white/5 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)];
+}
+
+/* Cards */
+.card-gradient {
+  @apply bg-gradient-to-br from-black to-[#121212] backdrop-blur-sm;
 }

@@ -12,7 +12,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { currentUser } = useAuth();
   
   return (
-    <div className="min-h-screen bg-imaginexus-dark text-white">
+    <div className="min-h-screen bg-black text-white">
       <Navbar />
       
       <div className="flex">

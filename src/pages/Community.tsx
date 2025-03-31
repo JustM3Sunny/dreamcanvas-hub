@@ -1,258 +1,400 @@
+
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { 
-  Users, 
-  TrendingUp, 
   MessageSquare, 
   Heart, 
-  Clock, 
-  Image 
+  Share2Icon,
+  UserIcon,
+  CalendarIcon,
+  SparklesIcon,
+  Users
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 
 const Community = () => {
-  const posts = [
+  const featuredPosts = [
     {
       id: 1,
-      username: "CreativeMind",
-      userAvatar: "https://i.pravatar.cc/150?img=1",
-      title: "My first Ghibli-style landscape!",
-      content: "Just tried the new Ghibli generator and I'm amazed at the results! Check out this countryside scene I created.",
-      imageUrl: "https://images.unsplash.com/photo-1502082553048-f009c37129b9",
+      title: "My first Ghibli-inspired landscape",
+      author: "Sarah Chen",
+      authorAvatar: "https://i.pravatar.cc/150?img=32",
+      date: "2 days ago",
       likes: 124,
-      comments: 24,
-      time: "2 hours ago",
-      tags: ["ghibli", "landscape"]
+      comments: 32,
+      shares: 18,
+      tags: ["landscape", "ghibli", "nature"],
+      content: "I used the Ghibli generator to create this beautiful landscape. It reminds me of scenes from Princess Mononoke. The AI captured the essence perfectly!",
+      image: "https://images.unsplash.com/photo-1623625434462-e5e42318ae49?q=80&w=1000&auto=format&fit=crop"
     },
     {
       id: 2,
-      username: "DigitalArtist",
-      userAvatar: "https://i.pravatar.cc/150?img=2",
-      title: "Cyberpunk city street - final version",
-      content: "After 10+ iterations, I finally got the perfect prompt for this cyberpunk scene! What do you think?",
-      imageUrl: "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986",
-      likes: 86,
-      comments: 15,
-      time: "5 hours ago",
-      tags: ["cyberpunk", "night", "city"]
-    },
+      title: "Creating Ghibli-style character portraits",
+      author: "Marcus Johnson",
+      authorAvatar: "https://i.pravatar.cc/150?img=11",
+      date: "5 days ago",
+      likes: 89,
+      comments: 21,
+      shares: 9,
+      tags: ["characters", "portrait", "tutorial"],
+      content: "Here's my process for creating character portraits in Ghibli style. I'll walk you through the settings and prompts I used to achieve this look.",
+      image: "https://images.unsplash.com/photo-1598089842345-111a2ef06faa?q=80&w=1000&auto=format&fit=crop"
+    }
+  ];
+  
+  const recentPosts = [
     {
       id: 3,
-      username: "AIExplorer",
-      userAvatar: "https://i.pravatar.cc/150?img=3",
-      title: "Fantasy character portraits",
-      content: "I've been experimenting with character generation. Here's a series of fantasy portraits I created using custom prompts.",
-      imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23",
-      likes: 203,
-      comments: 42,
-      time: "1 day ago",
-      tags: ["characters", "fantasy", "portraits"]
-    },
-  ];
-  
-  const events = [
-    {
-      id: 1,
-      title: "Weekly Prompt Challenge",
-      description: "Join our weekly prompt challenge! This week's theme: 'Ancient Civilizations'",
-      date: "Every Friday",
-      attendees: 156,
-      imageUrl: "https://images.unsplash.com/photo-1548248823-ce16a73b6d49",
+      title: "How to achieve that Ghibli cloud effect",
+      author: "Emma Wilson",
+      authorAvatar: "https://i.pravatar.cc/150?img=23",
+      date: "Yesterday",
+      likes: 43,
+      comments: 7,
+      shares: 5,
+      tags: ["clouds", "tutorial", "landscape"],
+      content: "I've been experimenting with the cloud effects in my generated images. Here are some tips to get those iconic fluffy Ghibli clouds."
     },
     {
-      id: 2,
-      title: "AI Art Workshop",
-      description: "Learn advanced prompting techniques from professional AI artists",
-      date: "Nov 15, 2023",
-      attendees: 89,
-      imageUrl: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e",
+      id: 4,
+      title: "My Ghibli-inspired short story illustrations",
+      author: "David Park",
+      authorAvatar: "https://i.pravatar.cc/150?img=53",
+      date: "3 days ago",
+      likes: 67,
+      comments: 14,
+      shares: 8,
+      tags: ["story", "illustration", "characters"],
+      content: "I wrote a short story and used Imagicaaa to illustrate each scene in Ghibli style. Here's how the project turned out!"
     },
+    {
+      id: 5,
+      title: "Weekly prompt challenge: Magical forests",
+      author: "Community Team",
+      authorAvatar: "https://i.pravatar.cc/150?img=68",
+      date: "4 days ago",
+      likes: 112,
+      comments: 47,
+      shares: 23,
+      tags: ["challenge", "prompt", "forest"],
+      content: "This week's community challenge is to create magical forest scenes inspired by Ghibli. Share your creations below!"
+    }
   ];
   
-  const popularTags = [
-    { name: "landscape", count: 1245 },
-    { name: "portrait", count: 982 },
-    { name: "ghibli", count: 756 },
-    { name: "cyberpunk", count: 654 },
-    { name: "space", count: 543 },
-    { name: "fantasy", count: 432 },
-    { name: "abstract", count: 321 },
-    { name: "retro", count: 210 },
+  const popularUsers = [
+    {
+      name: "Olivia Moore",
+      avatar: "https://i.pravatar.cc/150?img=47",
+      bio: "Digital artist and Ghibli enthusiast",
+      followers: 1243
+    },
+    {
+      name: "James Wilson",
+      avatar: "https://i.pravatar.cc/150?img=12",
+      bio: "Animation student | Lover of all things Miyazaki",
+      followers: 876
+    },
+    {
+      name: "Sophia Chen",
+      avatar: "https://i.pravatar.cc/150?img=44",
+      bio: "Illustrator and storyteller | Creating magical worlds",
+      followers: 2109
+    }
   ];
-
+  
+  const upcomingEvents = [
+    {
+      title: "Ghibli Art Challenge",
+      date: "October 15, 2023",
+      description: "A week-long challenge to create Ghibli-inspired art pieces."
+    },
+    {
+      title: "Community Livestream: Prompt Engineering",
+      date: "October 22, 2023",
+      description: "Learn how to craft the perfect prompts for Ghibli-style generation."
+    },
+    {
+      title: "Monthly Showcase",
+      date: "October 30, 2023",
+      description: "Share and celebrate the best community creations of the month."
+    }
+  ];
+  
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex flex-col">
         <h1 className="text-3xl font-bold mb-2">Community</h1>
-        <p className="text-gray-400">Connect with others, share your creations, and get inspired</p>
+        <p className="text-gray-400">Connect with fellow creators, share your work, and get inspired</p>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Tabs defaultValue="recent">
-            <TabsList className="bg-imaginexus-darker border border-white/10 mb-6">
-              <TabsTrigger
-                value="recent"
-                className="data-[state=active]:bg-white/10 data-[state=active]:text-white"
-              >
-                <Clock className="mr-2 h-4 w-4" />
-                Recent
-              </TabsTrigger>
-              <TabsTrigger
-                value="trending"
-                className="data-[state=active]:bg-white/10 data-[state=active]:text-white"
-              >
-                <TrendingUp className="mr-2 h-4 w-4" />
-                Trending
-              </TabsTrigger>
-              <TabsTrigger
-                value="starred"
-                className="data-[state=active]:bg-white/10 data-[state=active]:text-white"
-              >
-                <Heart className="mr-2 h-4 w-4" />
-                Starred
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="recent" className="space-y-6 mt-0">
-              {posts.map(post => (
-                <div key={post.id} className="rounded-lg border border-white/10 bg-imaginexus-darker overflow-hidden card-hover">
-                  <div className="p-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded-full overflow-hidden">
-                        <img 
-                          src={post.userAvatar} 
-                          alt={post.username}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium text-white">{post.username}</p>
-                        <p className="text-xs text-gray-400">{post.time}</p>
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-lg font-semibold mt-3">{post.title}</h3>
-                    <p className="text-gray-300 mt-2">{post.content}</p>
-                    
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {post.tags.map(tag => (
-                        <Badge key={tag} variant="outline" className="bg-white/5 text-gray-300 border-white/10">
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="border-t border-white/10">
-                    <img 
-                      src={post.imageUrl} 
-                      alt={post.title}
-                      className="w-full h-64 object-cover"
-                    />
-                  </div>
-                  
-                  <div className="p-4 flex items-center justify-between border-t border-white/10">
-                    <div className="flex items-center space-x-6">
-                      <button className="flex items-center space-x-1 text-gray-300 hover:text-primary">
-                        <Heart className="h-4 w-4" />
-                        <span>{post.likes}</span>
-                      </button>
-                      <button className="flex items-center space-x-1 text-gray-300 hover:text-primary">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>{post.comments}</span>
-                      </button>
-                    </div>
-                    <button className="text-gray-300 hover:text-primary">
-                      <Share2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              
-              <Button variant="outline" className="w-full border-dashed border-white/20 bg-transparent hover:bg-white/5">
-                Load More
-              </Button>
-            </TabsContent>
-            
-            <TabsContent value="trending" className="space-y-6 mt-0">
-              <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
-                <TrendingUp className="h-12 w-12 mx-auto text-gray-400" />
-                <h3 className="text-xl font-medium mt-4">Trending content</h3>
-                <p className="text-gray-400 mt-2">Discover what's popular in the community right now</p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="starred" className="space-y-6 mt-0">
-              <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
-                <Heart className="h-12 w-12 mx-auto text-gray-400" />
-                <h3 className="text-xl font-medium mt-4">Your starred content</h3>
-                <p className="text-gray-400 mt-2">Save your favorite posts to find them easily later</p>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+      <Tabs defaultValue="feed" className="w-full">
+        <TabsList className="grid grid-cols-4 mb-6">
+          <TabsTrigger value="feed">Feed</TabsTrigger>
+          <TabsTrigger value="discover">Discover</TabsTrigger>
+          <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="challenges">Challenges</TabsTrigger>
+        </TabsList>
         
-        <div className="space-y-6">
-          <div className="rounded-lg border border-white/10 bg-imaginexus-darker p-5">
-            <h3 className="font-medium flex items-center">
-              <User className="mr-2 h-5 w-5" /> 
-              My Profile
-            </h3>
-            <Button variant="outline" className="w-full mt-4 border-white/10 bg-white/5 hover:bg-white/10">
-              Create New Post
-            </Button>
-          </div>
-          
-          <div className="rounded-lg border border-white/10 bg-imaginexus-darker p-5">
-            <h3 className="font-medium flex items-center">
-              <Calendar className="mr-2 h-5 w-5" />
-              Upcoming Events
-            </h3>
-            <div className="mt-4 space-y-4">
-              {events.map(event => (
-                <div key={event.id} className="rounded border border-white/10 bg-white/5 overflow-hidden">
-                  <img 
-                    src={event.imageUrl}
-                    alt={event.title}
-                    className="w-full h-24 object-cover"
-                  />
-                  <div className="p-3">
-                    <h4 className="font-medium">{event.title}</h4>
-                    <p className="text-xs text-gray-400 mt-1">{event.description}</p>
-                    <div className="flex justify-between items-center mt-3 text-xs">
-                      <div className="flex items-center text-gray-400">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {event.date}
-                      </div>
-                      <div className="flex items-center text-gray-400">
-                        <Users className="h-3 w-3 mr-1" />
-                        {event.attendees}
+        <TabsContent value="feed" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Create post */}
+              <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
+                <CardContent className="pt-6">
+                  <div className="flex gap-3">
+                    <Avatar>
+                      <AvatarImage src="https://i.pravatar.cc/150?img=32" />
+                      <AvatarFallback>SC</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <Textarea placeholder="Share your creations or thoughts..." className="bg-imaginexus-dark border-white/10" />
+                      <div className="flex justify-between mt-3">
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" className="bg-transparent border-white/10 hover:bg-white/5">
+                            <UserIcon size={16} className="mr-2" />
+                            Tag People
+                          </Button>
+                          <Button variant="outline" size="sm" className="bg-transparent border-white/10 hover:bg-white/5">
+                            <CalendarIcon size={16} className="mr-2" />
+                            Event
+                          </Button>
+                        </div>
+                        <Button className="gradient-btn" size="sm">Share</Button>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                </CardContent>
+              </Card>
+              
+              {/* Featured posts */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-white">Featured</h3>
+                
+                {featuredPosts.map(post => (
+                  <Card key={post.id} className="border-white/10 bg-imaginexus-darker shadow-lg overflow-hidden">
+                    <div className="h-48 overflow-hidden">
+                      <img src={post.image} alt={post.title} className="w-full object-cover h-full" />
+                    </div>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={post.authorAvatar} />
+                            <AvatarFallback>{post.author.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-white font-medium">{post.author}</p>
+                            <p className="text-gray-400 text-sm flex items-center">
+                              <CalendarIcon size={14} className="mr-1" />
+                              {post.date}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          {post.tags.map(tag => (
+                            <Badge key={tag} variant="secondary" className="ml-1 bg-primary/20 hover:bg-primary/30 text-white">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <CardTitle className="text-lg mt-2">{post.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-300">{post.content}</p>
+                    </CardContent>
+                    <CardFooter className="border-t border-white/10 flex justify-between">
+                      <div className="flex gap-4">
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                          <Heart size={16} className="mr-1" /> {post.likes}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                          <MessageSquare size={16} className="mr-1" /> {post.comments}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                          <Share2Icon size={16} className="mr-1" /> {post.shares}
+                        </Button>
+                      </div>
+                      <Button variant="outline" size="sm" className="bg-transparent border-white/10 hover:bg-white/5">
+                        View Discussion
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+                
+                {/* Recent Posts */}
+                <h3 className="text-xl font-bold text-white mt-8">Recent Posts</h3>
+                
+                {recentPosts.map(post => (
+                  <Card key={post.id} className="border-white/10 bg-imaginexus-darker shadow-lg">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={post.authorAvatar} />
+                            <AvatarFallback>{post.author.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-white font-medium">{post.author}</p>
+                            <p className="text-gray-400 text-sm flex items-center">
+                              <CalendarIcon size={14} className="mr-1" />
+                              {post.date}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          {post.tags.map(tag => (
+                            <Badge key={tag} variant="secondary" className="ml-1 bg-primary/20 hover:bg-primary/30 text-white">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <CardTitle className="text-lg mt-2">{post.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-300">{post.content}</p>
+                    </CardContent>
+                    <CardFooter className="border-t border-white/10 flex justify-between">
+                      <div className="flex gap-4">
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                          <Heart size={16} className="mr-1" /> {post.likes}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                          <MessageSquare size={16} className="mr-1" /> {post.comments}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                          <Share2Icon size={16} className="mr-1" /> {post.shares}
+                        </Button>
+                      </div>
+                      <Button variant="outline" size="sm" className="bg-transparent border-white/10 hover:bg-white/5">
+                        View Discussion
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </div>
+            
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Popular users */}
+              <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-base">Popular Creators</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {popularUsers.map((user, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={user.avatar} />
+                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-medium truncate">{user.name}</p>
+                        <p className="text-gray-400 text-xs truncate">{user.bio}</p>
+                      </div>
+                      <Button size="sm" variant="outline" className="bg-transparent border-white/10 hover:bg-white/5">
+                        Follow
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+                <CardFooter className="border-t border-white/10">
+                  <Button variant="ghost" size="sm" className="w-full">View All</Button>
+                </CardFooter>
+              </Card>
+              
+              {/* Upcoming events */}
+              <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-base">Upcoming Events</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {upcomingEvents.map((event, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <SparklesIcon size={16} className="text-primary" />
+                        <h4 className="text-white font-medium">{event.title}</h4>
+                      </div>
+                      <p className="text-gray-400 text-xs flex items-center">
+                        <CalendarIcon size={12} className="mr-1" />
+                        {event.date}
+                      </p>
+                      <p className="text-gray-300 text-sm">{event.description}</p>
+                      {index < upcomingEvents.length - 1 && <Separator className="bg-white/10 my-2" />}
+                    </div>
+                  ))}
+                </CardContent>
+                <CardFooter className="border-t border-white/10">
+                  <Button variant="ghost" size="sm" className="w-full">View All Events</Button>
+                </CardFooter>
+              </Card>
+              
+              {/* Community stats */}
+              <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-base">Community Stats</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-black/20 rounded-lg">
+                      <h3 className="text-2xl font-bold text-white">8.4k</h3>
+                      <p className="text-gray-400 text-sm">Members</p>
+                    </div>
+                    <div className="text-center p-3 bg-black/20 rounded-lg">
+                      <h3 className="text-2xl font-bold text-white">23k</h3>
+                      <p className="text-gray-400 text-sm">Creations</p>
+                    </div>
+                    <div className="text-center p-3 bg-black/20 rounded-lg">
+                      <h3 className="text-2xl font-bold text-white">142</h3>
+                      <p className="text-gray-400 text-sm">Online Now</p>
+                    </div>
+                    <div className="text-center p-3 bg-black/20 rounded-lg">
+                      <h3 className="text-2xl font-bold text-white">3.6k</h3>
+                      <p className="text-gray-400 text-sm">Posts Today</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-          
-          <div className="rounded-lg border border-white/10 bg-imaginexus-darker p-5">
-            <h3 className="font-medium flex items-center">
-              <Sparkles className="mr-2 h-5 w-5" />
-              Popular Tags
-            </h3>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {popularTags.map(tag => (
-                <Badge key={tag.name} variant="outline" className="bg-white/5 hover:bg-white/10 text-gray-300 border-white/10">
-                  #{tag.name}
-                  <span className="ml-1 text-xs text-gray-400">{tag.count}</span>
-                </Badge>
-              ))}
-            </div>
+        </TabsContent>
+        
+        <TabsContent value="discover">
+          <div className="p-8 text-center">
+            <Users size={48} className="mx-auto text-gray-500 mb-4" />
+            <h3 className="text-xl font-medium text-white mb-2">Discover creators</h3>
+            <p className="text-gray-400 mb-4">Find and follow creators that match your interests</p>
+            <Button className="gradient-btn">Browse Categories</Button>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="events">
+          <div className="p-8 text-center">
+            <CalendarIcon size={48} className="mx-auto text-gray-500 mb-4" />
+            <h3 className="text-xl font-medium text-white mb-2">Community Events</h3>
+            <p className="text-gray-400 mb-4">Participate in challenges, workshops, and more</p>
+            <Button className="gradient-btn">View Calendar</Button>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="challenges">
+          <div className="p-8 text-center">
+            <SparklesIcon size={48} className="mx-auto text-gray-500 mb-4" />
+            <h3 className="text-xl font-medium text-white mb-2">Weekly Challenges</h3>
+            <p className="text-gray-400 mb-4">Join the weekly prompt challenges and showcase your work</p>
+            <Button className="gradient-btn">Current Challenge</Button>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

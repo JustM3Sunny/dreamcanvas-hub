@@ -20,7 +20,6 @@ import {
   X, 
   Home, 
   Image, 
-  Code, 
   Palette,
   PanelRight,
   GalleryVertical,
@@ -36,7 +35,7 @@ const Navbar = () => {
   };
   
   return (
-    <header className="sticky top-0 z-50 w-full py-3 px-4 md:px-6 bg-imaginexus-darker border-b border-white/10 backdrop-blur-lg">
+    <header className="sticky top-0 z-50 w-full py-3 px-4 md:px-6 bg-black border-b border-white/5 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
@@ -78,9 +77,6 @@ const Navbar = () => {
           <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors">
             Pricing
           </Link>
-          <Link to="/api" className="text-gray-300 hover:text-white transition-colors">
-            API
-          </Link>
           
           {currentUser ? (
             <div className="flex items-center space-x-4">
@@ -95,7 +91,7 @@ const Navbar = () => {
                     <AvatarFallback className="bg-primary text-white">{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-imaginexus-darker border-white/10">
+                <DropdownMenuContent align="end" className="w-56 bg-black border-white/10">
                   <DropdownMenuLabel className="text-white">
                     {currentUser.displayName || currentUser.email}
                   </DropdownMenuLabel>
@@ -140,7 +136,7 @@ const Navbar = () => {
                   <AvatarFallback className="bg-primary text-white">{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-imaginexus-darker border-white/10">
+              <DropdownMenuContent align="end" className="w-56 bg-black border-white/10">
                 <DropdownMenuLabel className="text-white">
                   {currentUser.displayName || currentUser.email}
                 </DropdownMenuLabel>
@@ -177,7 +173,7 @@ const Navbar = () => {
         
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-[61px] z-40 bg-imaginexus-darker border-t border-white/10">
+          <div className="md:hidden fixed inset-0 top-[61px] z-40 bg-black border-t border-white/5">
             <div className="flex flex-col p-4 space-y-4">
               <Link 
                 to="/gallery" 
@@ -210,14 +206,6 @@ const Navbar = () => {
               >
                 <PanelRight size={20} />
                 <span>Pricing</span>
-              </Link>
-              <Link 
-                to="/api" 
-                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
-                onClick={toggleMobileMenu}
-              >
-                <Code size={20} />
-                <span>API</span>
               </Link>
               
               {!currentUser && (

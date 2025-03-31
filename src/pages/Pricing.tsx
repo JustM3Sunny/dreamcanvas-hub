@@ -4,36 +4,39 @@ import Navbar from '../components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { updateUserSubscription, getUserSubscription } from '../services/imageService';
+import { getUserSubscription } from '../services/imageService';
 import { toast } from 'sonner';
+import RazorpayCheckout from '../components/RazorpayCheckout';
 
 const PricingTier = ({ 
   name, 
   price, 
   description, 
   features, 
-  buttonText,
   tierCode,
   highlighted = false,
   currentTier,
-  onSelectPlan,
-  loading = false
+  amountInPaise = 0
 }: { 
-  name: string; 
-  price: string; 
-  description: string; 
+  name: string;
+  price: string;
+  description: string;
   features: string[];
-  buttonText: string;
   tierCode: string;
   highlighted?: boolean;
   currentTier?: string;
-  onSelectPlan: (tier: string) => void;
-  loading?: boolean;
+  amountInPaise?: number;
 }) => {
+  const { currentUser } = useAuth();
   const isCurrentPlan = currentTier === tierCode;
   
+  const handlePaymentSuccess = (paymentId: string) => {
+    toast.success(`Payment successful! Payment ID: ${paymentId}`);
+    // In a real app, you would update user subscription in your backend
+  };
+  
   return (
-    <div className={`rounded-lg p-6 ${highlighted ? 'border-2 border-imaginexus-accent1 bg-imaginexus-darker' : 'border border-gray-800 bg-imaginexus-darker/50'}`}>
+    <div className={`rounded-lg p-6 ${highlighted ? 'border-2 border-imaginexus-accent1 bg-black' : 'border border-gray-800 bg-black/50'}`}>
       <h3 className="text-lg font-medium text-white">{name}</h3>
       <div className="mt-4 flex items-baseline">
         <span className="text-4xl font-bold text-white">{price}</span>
@@ -48,19 +51,39 @@ const PricingTier = ({
           </li>
         ))}
       </ul>
-      <Button 
-        className={`mt-8 w-full ${
-          isCurrentPlan 
-            ? 'bg-gray-700 hover:bg-gray-700 cursor-not-allowed' 
-            : highlighted 
-              ? 'gradient-btn' 
-              : 'bg-imaginexus-darker border border-gray-700 hover:bg-gray-800'
-        }`}
-        disabled={isCurrentPlan || loading}
-        onClick={() => !isCurrentPlan && onSelectPlan(tierCode)}
-      >
-        {isCurrentPlan ? 'Current Plan' : loading ? 'Processing...' : buttonText}
-      </Button>
+      
+      <div className="mt-8">
+        {isCurrentPlan ? (
+          <Button 
+            className="w-full bg-gray-700 hover:bg-gray-700 cursor-not-allowed"
+            disabled
+          >
+            Current Plan
+          </Button>
+        ) : tierCode === "FREE" ? (
+          <Button 
+            className={`w-full ${highlighted ? 'gradient-btn' : 'bg-black border border-gray-700 hover:bg-gray-900'}`}
+            onClick={() => toast.success(`Subscribed to Free plan!`)}
+          >
+            Get Started
+          </Button>
+        ) : (
+          currentUser && (
+            <RazorpayCheckout 
+              amount={amountInPaise}
+              planName={name}
+              onSuccess={handlePaymentSuccess}
+            />
+          ) || (
+            <Button 
+              className={`w-full ${highlighted ? 'gradient-btn' : 'bg-black border border-gray-700 hover:bg-gray-900'}`}
+              onClick={() => toast.info("Please sign in to subscribe")}
+            >
+              {`Subscribe to ${name}`}
+            </Button>
+          )
+        )}
+      </div>
     </div>
   );
 };
@@ -68,7 +91,6 @@ const PricingTier = ({
 const Pricing = () => {
   const { currentUser } = useAuth();
   const [currentTier, setCurrentTier] = useState<string>('FREE');
-  const [loading, setLoading] = useState(false);
   
   React.useEffect(() => {
     const loadUserSubscription = async () => {
@@ -85,32 +107,8 @@ const Pricing = () => {
     loadUserSubscription();
   }, [currentUser]);
   
-  const handleSelectPlan = async (tier: string) => {
-    if (!currentUser) {
-      toast.error("Please sign in to subscribe");
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      // In a real app, this would include payment processing
-      const success = await updateUserSubscription(currentUser.uid, tier);
-      if (success) {
-        setCurrentTier(tier);
-        toast.success(`Successfully subscribed to ${tier} plan`);
-      } else {
-        throw new Error("Failed to update subscription");
-      }
-    } catch (error) {
-      console.error("Error updating subscription:", error);
-      toast.error("Failed to update subscription");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   return (
-    <div className="min-h-screen flex flex-col bg-imaginexus-dark">
+    <div className="min-h-screen flex flex-col bg-black">
       <Navbar />
       
       <main className="flex-1 container mx-auto px-4 py-16">
@@ -131,16 +129,14 @@ const Pricing = () => {
               "Community support",
               "Basic prompt enhancement"
             ]}
-            buttonText="Get Started"
             tierCode="FREE"
             currentTier={currentTier}
-            onSelectPlan={handleSelectPlan}
-            loading={loading}
+            amountInPaise={0}
           />
           
           <PricingTier 
             name="Basic" 
-            price="$9" 
+            price="₹299" 
             description="For casual creators" 
             features={[
               "15 images per day",
@@ -149,16 +145,14 @@ const Pricing = () => {
               "Image-to-image generation",
               "Email support"
             ]}
-            buttonText="Subscribe"
             tierCode="BASIC"
             currentTier={currentTier}
-            onSelectPlan={handleSelectPlan}
-            loading={loading}
+            amountInPaise={29900}
           />
           
           <PricingTier 
             name="Pro" 
-            price="$19" 
+            price="₹799" 
             description="For creators and enthusiasts" 
             features={[
               "50 images per day",
@@ -168,17 +162,15 @@ const Pricing = () => {
               "Priority generation",
               "24/7 email support"
             ]}
-            buttonText="Subscribe"
             tierCode="PRO"
             highlighted={true}
             currentTier={currentTier}
-            onSelectPlan={handleSelectPlan}
-            loading={loading}
+            amountInPaise={79900}
           />
           
           <PricingTier 
             name="Unlimited" 
-            price="$49" 
+            price="₹2499" 
             description="For professional use cases" 
             features={[
               "1000 images per day",
@@ -188,11 +180,9 @@ const Pricing = () => {
               "Dedicated support",
               "Commercial license"
             ]}
-            buttonText="Contact Sales"
             tierCode="UNLIMITED"
             currentTier={currentTier}
-            onSelectPlan={handleSelectPlan}
-            loading={loading}
+            amountInPaise={249900}
           />
         </div>
         
@@ -207,7 +197,7 @@ const Pricing = () => {
           </Button>
         </div>
         
-        <div className="mt-16 bg-imaginexus-darker rounded-lg border border-gray-800 p-8 max-w-4xl mx-auto">
+        <div className="mt-16 bg-black rounded-lg border border-gray-800 p-8 max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold mb-4 text-white">Frequently Asked Questions</h2>
           <div className="space-y-6">
             <div>
@@ -220,7 +210,7 @@ const Pricing = () => {
             </div>
             <div>
               <h3 className="text-lg font-medium text-white mb-2">What payment methods do you accept?</h3>
-              <p className="text-gray-400">We accept all major credit cards, PayPal, and selected cryptocurrencies.</p>
+              <p className="text-gray-400">We accept all major credit cards, debit cards, UPI, and net banking via Razorpay.</p>
             </div>
             <div>
               <h3 className="text-lg font-medium text-white mb-2">Do you offer refunds?</h3>

@@ -8,7 +8,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Gallery from "./pages/Gallery";
 import Pricing from "./pages/Pricing";
-import ApiPage from "./pages/Api";
 import NotFound from "./pages/NotFound";
 import Styles from "./pages/Styles";
 import Settings from "./pages/Settings";
@@ -35,7 +34,6 @@ const App = () => (
             <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/gallery" element={<Layout><Gallery /></Layout>} />
             <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
-            <Route path="/api" element={<Layout><ApiPage /></Layout>} />
             <Route path="/styles" element={<Layout><Styles /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
             <Route path="/admin" element={<Layout><Admin /></Layout>} />

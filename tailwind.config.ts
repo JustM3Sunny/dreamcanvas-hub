@@ -54,8 +54,8 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				imaginexus: {
-					dark: '#080808',
-					darker: '#050505',
+					dark: '#000000',
+					darker: '#000000',
 					light: '#ffffff',
 					muted: '#8E9196',
 					accent1: '#9b87f5',

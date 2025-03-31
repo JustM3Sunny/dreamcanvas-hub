@@ -12,7 +12,8 @@ import {
   MessageSquare,
   FileText,
   LifeBuoy,
-  Mountain
+  Mountain,
+  CreditCard
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -27,7 +28,7 @@ const Sidebar = () => {
     { icon: Image, label: 'Gallery', path: '/gallery' },
     { icon: GalleryVertical, label: 'Ghibli Studio', path: '/ghibli' },
     { icon: Palette, label: 'Image Styles', path: '/styles' },
-    { icon: Code, label: 'API Access', path: '/api' },
+    { icon: CreditCard, label: 'Pricing', path: '/pricing' },
     { icon: FileText, label: 'Templates', path: '/templates' },
     { icon: Users, label: 'Community', path: '/community' },
     { icon: MessageSquare, label: 'Support', path: '/support' },
@@ -35,9 +36,9 @@ const Sidebar = () => {
   ];
   
   return (
-    <aside className="fixed left-0 top-[61px] h-[calc(100vh-61px)] w-64 bg-imaginexus-darker border-r border-white/10 hidden md:block overflow-y-auto scrollbar-none z-40">
+    <aside className="fixed left-0 top-[61px] h-[calc(100vh-61px)] w-64 bg-black border-r border-white/5 hidden md:block overflow-y-auto scrollbar-none z-40">
       <div className="p-4">
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 mb-4">Main Menu</p>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3 mb-4">Main Menu</p>
         
         <nav className="space-y-1">
           {menuItems.map((item) => (
@@ -52,9 +53,9 @@ const Sidebar = () => {
           ))}
         </nav>
         
-        <div className="mt-8 p-4 rounded-lg bg-gradient-to-br from-primary/20 to-accent2/20 border border-white/10">
+        <div className="mt-8 p-4 rounded-lg bg-gradient-to-br from-[#111]/80 to-[#222]/80 border border-white/5">
           <p className="text-sm font-medium text-white">Need help?</p>
-          <p className="text-xs text-gray-300 mt-1">Contact our support team for assistance</p>
+          <p className="text-xs text-gray-400 mt-1">Contact our support team for assistance</p>
           <Link to="/support" className="mt-3 text-xs text-primary hover:underline flex items-center">
             <LifeBuoy size={14} className="mr-1" /> Get Support
           </Link>
