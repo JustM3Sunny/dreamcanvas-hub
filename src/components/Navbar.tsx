@@ -14,15 +14,9 @@ import {
 } from './ui/dropdown-menu';
 import { 
   LogOut, 
-  User as UserIcon, 
   Settings, 
   Menu, 
   X, 
-  Home, 
-  Image, 
-  Palette,
-  PanelRight,
-  GalleryVertical,
   LayoutDashboard
 } from 'lucide-react';
 
@@ -35,31 +29,27 @@ const Navbar = () => {
   };
   
   return (
-    <header className="sticky top-0 z-50 w-full py-3 px-4 md:px-6 bg-black border-b border-white/5 backdrop-blur-lg">
+    <header className="sticky top-0 z-50 w-full py-3 px-4 md:px-6 bg-black border-b border-white/10 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
-            <path 
-              d="M12 2L4 7V17L12 22L20 17V7L12 2Z" 
-              stroke="url(#gradient)" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-            />
-            <circle 
-              cx="12" 
-              cy="12" 
-              r="3" 
-              stroke="url(#gradient)" 
-              strokeWidth="2" 
-            />
-            <defs>
-              <linearGradient id="gradient" x1="4" y1="12" x2="20" y2="12" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#9b87f5" />
-                <stop offset="1" stopColor="#33C3F0" />
-              </linearGradient>
-            </defs>
-          </svg>
+          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+              <path 
+                d="M12 2L4 7V17L12 22L20 17V7L12 2Z" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+              />
+              <circle 
+                cx="12" 
+                cy="12" 
+                r="3" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+              />
+            </svg>
+          </div>
           <span className="text-white text-xl font-bold">Imagicaaa</span>
         </Link>
         
@@ -86,9 +76,9 @@ const Navbar = () => {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/50 transition-all">
+                  <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-indigo-500/20 hover:ring-indigo-500/50 transition-all">
                     <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || "User"} />
-                    <AvatarFallback className="bg-primary text-white">{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
+                    <AvatarFallback className="bg-indigo-600 text-white">{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-black border-white/10">
@@ -119,7 +109,7 @@ const Navbar = () => {
           ) : (
             <Button 
               onClick={signInWithGoogle} 
-              className="bg-gradient-primary hover:opacity-90 text-white rounded-md px-6"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white rounded-md px-6"
             >
               Sign In
             </Button>
@@ -131,9 +121,9 @@ const Navbar = () => {
           {currentUser && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Avatar className="h-8 w-8 mr-4 cursor-pointer ring-2 ring-primary/20">
+                <Avatar className="h-8 w-8 mr-4 cursor-pointer ring-2 ring-indigo-500/20">
                   <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || "User"} />
-                  <AvatarFallback className="bg-primary text-white">{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
+                  <AvatarFallback className="bg-indigo-600 text-white">{currentUser.displayName?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-black border-white/10">
@@ -173,39 +163,35 @@ const Navbar = () => {
         
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-[61px] z-40 bg-black border-t border-white/5">
+          <div className="md:hidden fixed inset-0 top-[61px] z-40 bg-black border-t border-white/10">
             <div className="flex flex-col p-4 space-y-4">
               <Link 
                 to="/gallery" 
-                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                className="flex items-center gap-3 text-gray-300 p-3 rounded-md hover:bg-white/5 hover:text-white"
                 onClick={toggleMobileMenu}
               >
-                <Image size={20} />
-                <span>Gallery</span>
+                Gallery
               </Link>
               <Link 
                 to="/ghibli" 
-                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                className="flex items-center gap-3 text-gray-300 p-3 rounded-md hover:bg-white/5 hover:text-white"
                 onClick={toggleMobileMenu}
               >
-                <GalleryVertical size={20} />
-                <span>Ghibli</span>
+                Ghibli
               </Link>
               <Link 
                 to="/features" 
-                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                className="flex items-center gap-3 text-gray-300 p-3 rounded-md hover:bg-white/5 hover:text-white"
                 onClick={toggleMobileMenu}
               >
-                <Palette size={20} />
-                <span>Features</span>
+                Features
               </Link>
               <Link 
                 to="/pricing" 
-                className="flex items-center gap-3 text-gray-300 p-2 rounded-md hover:bg-white/5 hover:text-white"
+                className="flex items-center gap-3 text-gray-300 p-3 rounded-md hover:bg-white/5 hover:text-white"
                 onClick={toggleMobileMenu}
               >
-                <PanelRight size={20} />
-                <span>Pricing</span>
+                Pricing
               </Link>
               
               {!currentUser && (
@@ -214,7 +200,7 @@ const Navbar = () => {
                     signInWithGoogle();
                     toggleMobileMenu();
                   }}
-                  className="w-full bg-gradient-primary hover:opacity-90 text-white rounded-md"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white rounded-md"
                 >
                   Sign In
                 </Button>

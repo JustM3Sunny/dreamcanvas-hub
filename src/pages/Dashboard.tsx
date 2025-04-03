@@ -1,154 +1,183 @@
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '../contexts/AuthContext';
-import { UserLimit } from '../services/imageService';
-import SubscriptionInfo from '../components/SubscriptionInfo';
-import {
-  BarChart,
-  LayoutDashboard,
-  Image as ImageIcon,
-  Zap,
-  Sparkles,
-  Plus,
-  Palette,
-  History,
-  Settings2
+import { 
+  Calendar, 
+  CreditCard, 
+  Image as ImageIcon, 
+  TrendingUp, 
+  Users, 
+  Zap 
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { getUserSubscription } from '../services/imageService';
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
+  const [userSubscription, setUserSubscription] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Mock user limit data
-  const userLimit: UserLimit = {
-    tier: 'BASIC',
-    imagesGenerated: 15,
-    imagesLimit: 50,
-    lastRefresh: new Date().toISOString(),
-    ghibliImagesGenerated: 3,
-    ghibliImagesLimit: 5,
-  };
+  React.useEffect(() => {
+    const loadUserData = async () => {
+      if (currentUser) {
+        try {
+          setIsLoading(true);
+          const subscription = await getUserSubscription(currentUser.uid);
+          setUserSubscription(subscription);
+        } catch (error) {
+          console.error("Error loading user data:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadUserData();
+  }, [currentUser]);
   
-  // Mock recent generations data
-  const recentGenerations = [
-    { id: 1, prompt: "A beautiful sunset over mountains", date: "2 hours ago", style: "Realistic" },
-    { id: 2, prompt: "Cyberpunk city with neon lights", date: "5 hours ago", style: "Futuristic" },
-    { id: 3, prompt: "Forest landscape with a small cabin", date: "Yesterday", style: "Ghibli" },
+  // Sample data - would be fetched from API in a real application
+  const stats = [
+    { name: 'Images Generated', value: '128', icon: ImageIcon },
+    { name: 'Credits Remaining', value: '230', icon: CreditCard },
+    { name: 'Unique Styles Used', value: '7', icon: Zap },
+    { name: 'Account Age', value: '24 days', icon: Calendar }
+  ];
+  
+  const recentActivity = [
+    { id: 1, action: 'Generated Image', prompt: 'A futuristic city with flying cars', time: '2 hours ago' },
+    { id: 2, action: 'Edited Style', prompt: 'Mountain landscape with sunset', time: '5 hours ago' },
+    { id: 3, action: 'Generated Image', prompt: 'Underwater scene with bioluminescent creatures', time: '1 day ago' },
+    { id: 4, action: 'Generated Image', prompt: 'Medieval castle on a hill with dragons', time: '2 days ago' }
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Welcome back, {currentUser?.displayName?.split(' ')[0] || 'User'}</h1>
-          <p className="text-gray-400">Manage your AI image generation and explore your creative possibilities</p>
-        </div>
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+        <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">Refresh</Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, i) => (
+          <Card key={i} className="bg-black border-white/10">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-400">{stat.name}</p>
+                <p className="text-3xl font-bold text-white">{stat.value}</p>
+              </div>
+              <stat.icon className="h-10 w-10 text-purple-400 opacity-80" />
+            </CardContent>
+          </Card>
+        ))}
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column - Stats and Actions */}
-        <div className="space-y-6">
-          <SubscriptionInfo userLimit={userLimit} />
-          
-          <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-base">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start border-white/10 bg-white/5 hover:bg-white/10">
-                <ImageIcon className="mr-2 h-4 w-4" />
-                Generate New Image
-              </Button>
-              <Button variant="outline" className="w-full justify-start border-white/10 bg-white/5 hover:bg-white/10">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Ghibli Generator
-              </Button>
-              <Button variant="outline" className="w-full justify-start border-white/10 bg-white/5 hover:bg-white/10">
-                <Settings2 className="mr-2 h-4 w-4" />
-                Customize Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Center and right columns - Recent activity and Stats */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div>
-                <CardTitle className="text-base">Recent Generations</CardTitle>
-                <CardDescription className="text-gray-400">Your latest image creations</CardDescription>
-              </div>
-              <Button variant="outline" size="sm" className="border-white/10 bg-white/5 hover:bg-white/10">
-                <History className="mr-2 h-4 w-4" />
-                View All
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {recentGenerations.map(gen => (
-                  <div key={gen.id} className="flex items-start p-3 rounded-lg border border-white/5 bg-white/5">
-                    <div className="h-10 w-10 rounded bg-primary/20 flex items-center justify-center mr-3">
-                      <Palette size={18} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{gen.prompt}</p>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-gray-400">{gen.date}</span>
-                        <span className="mx-2 text-gray-600">•</span>
-                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-white/10 text-gray-300">{gen.style}</span>
-                      </div>
-                    </div>
+        <Card className="col-span-2 bg-black border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white">Recent Activity</CardTitle>
+            <CardDescription className="text-gray-400">Your latest image generations and actions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivity.map((item) => (
+                <div key={item.id} className="flex items-start gap-4 border-b border-white/5 pb-4">
+                  <div className="h-10 w-10 rounded-full bg-purple-800/30 flex items-center justify-center">
+                    <ImageIcon className="h-5 w-5 text-purple-400" />
                   </div>
-                ))}
-                
-                <Button variant="outline" className="w-full mt-2 border-dashed border-white/20 bg-transparent hover:bg-white/5">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create New Image
-                </Button>
+                  <div>
+                    <p className="text-sm font-medium text-white">{item.action}</p>
+                    <p className="text-xs text-gray-400 mt-1">"{item.prompt}"</p>
+                    <p className="text-xs text-gray-500 mt-1">{item.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-black border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white">Usage Stats</CardTitle>
+            <CardDescription className="text-gray-400">Monthly generation patterns</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[220px] flex items-center justify-center">
+              <div className="text-center">
+                <TrendingUp className="h-12 w-12 text-purple-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-400">Your usage is 23% higher than last month</p>
               </div>
-            </CardContent>
-          </Card>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-bold">{userLimit.imagesGenerated}</CardTitle>
-                <CardDescription className="text-gray-400">Images Generated</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <ImageIcon size={18} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="bg-black border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white">Popular Styles</CardTitle>
+            <CardDescription className="text-gray-400">Your most used image styles</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-300">Ghibli Style</span>
+                <span className="text-sm text-gray-400">43%</span>
+              </div>
+              <div className="w-full bg-gray-800 rounded-full h-2">
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full w-[43%]"></div>
+              </div>
+              
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-sm text-gray-300">Photorealistic</span>
+                <span className="text-sm text-gray-400">29%</span>
+              </div>
+              <div className="w-full bg-gray-800 rounded-full h-2">
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full w-[29%]"></div>
+              </div>
+              
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-sm text-gray-300">Digital Art</span>
+                <span className="text-sm text-gray-400">18%</span>
+              </div>
+              <div className="w-full bg-gray-800 rounded-full h-2">
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full w-[18%]"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-black border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white">Recommended</CardTitle>
+            <CardDescription className="text-gray-400">Try these features to enhance your experience</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="h-10 w-10 rounded-full bg-green-800/30 flex items-center justify-center">
+                  <Zap className="h-5 w-5 text-green-400" />
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-bold">{userLimit.ghibliImagesGenerated}</CardTitle>
-                <CardDescription className="text-gray-400">Ghibli Images</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                  <Sparkles size={18} />
+                <div>
+                  <p className="text-sm font-medium text-white">Upgrade your plan</p>
+                  <p className="text-xs text-gray-400 mt-1">Get more daily credits and unlock premium styles</p>
+                  <Button className="mt-2 h-8 text-xs bg-gradient-to-r from-indigo-600 to-purple-600" size="sm">View Plans</Button>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-white/10 bg-imaginexus-darker shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-bold">Basic</CardTitle>
-                <CardDescription className="text-gray-400">Current Plan</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-                  <Zap size={18} />
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="h-10 w-10 rounded-full bg-blue-800/30 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-blue-400" />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Join the community</p>
+                  <p className="text-xs text-gray-400 mt-1">Connect with other creators and share your work</p>
+                  <Button className="mt-2 h-8 text-xs" size="sm" variant="outline">Explore Community</Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
