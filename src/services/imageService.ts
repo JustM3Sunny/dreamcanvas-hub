@@ -328,6 +328,127 @@ async function run() {
   // Your code here
 }
 
+export async function generateGhibliImage(
+  prompt: string,
+  userId: string
+): Promise<GeneratedImage> {
+  try {
+    const userLimit = await checkUserLimit(userId);
+    if (!userLimit) {
+      throw new Error("Could not verify user limits");
+    }
+
+    // Check ghibli limit
+    const ghibliLimit = IMAGE_TIERS[userLimit.tier as keyof typeof IMAGE_TIERS].ghibliLimit || 2;
+    const ghibliUsed = userLimit.ghibliImagesGenerated || 0;
+    
+    if (ghibliUsed >= ghibliLimit) {
+      throw new Error(`You've reached your daily limit of ${ghibliLimit} Ghibli style images. Your quota will renew in 24 hours.`);
+    }
+
+    // Enhanced prompt specifically for Ghibli style
+    const ghibliPrompt = `Create a Studio Ghibli style animation scene with: ${prompt}. Use Ghibli's signature soft colors, detailed backgrounds, whimsical elements, and Hayao Miyazaki's distinctive art style with fantasy elements, dream-like atmosphere, and nature themes.`;
+    
+    toast.info("Generating Studio Ghibli style image...");
+    
+    // Try to use Gemini for text-to-image generation first
+    const genAI = initGemini();
+    let imageUrl = "";
+    
+    if (genAI) {
+      try {
+        // Use the regular Gemini model - NOT the specialized one that's failing
+        const model = genAI.getGenerativeModel({ 
+          model: "gemini-2.0-flash",
+          safetySettings: [
+            {
+              category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+              threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+              threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+              threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+          ],
+        });
+        
+        const result = await model.generateContent({
+          contents: [{ role: "user", parts: [{ text: `Generate an image: ${ghibliPrompt}` }] }],
+        });
+        
+        const response = result.response;
+        const parts = response.candidates?.[0]?.content?.parts || [];
+        const inlineData = parts.find(part => part.inlineData)?.inlineData;
+        
+        if (inlineData && inlineData.mimeType.startsWith('image/')) {
+          const imageRef = ref(storage, `gemini/${userId}/${Date.now()}_ghibli.jpg`);
+          await uploadString(imageRef, inlineData.data, 'base64', { contentType: inlineData.mimeType });
+          imageUrl = await getDownloadURL(imageRef);
+          console.log("Generated Ghibli image with Gemini 2.0 Flash");
+        }
+      } catch (geminiError) {
+        console.error("Error generating with Gemini:", geminiError);
+      }
+    }
+    
+    // If Gemini failed, fallback to Gradio
+    if (!imageUrl) {
+      console.log("Falling back to Gradio for Ghibli image generation");
+      const clientModel = "Rooc/FLUX-Fast";
+      const client = await Client.connect(clientModel);
+      const result = await client.predict("/predict", {
+        param_0: ghibliPrompt,
+      });
+      
+      console.log("API Raw Response:", result);
+      
+      if (!result.data || !Array.isArray(result.data) || result.data.length === 0) {
+        throw new Error("Invalid response: No data received");
+      }
+      
+      imageUrl = result.data[0]?.url;
+      if (!imageUrl) {
+        throw new Error("No image URL received in response");
+      }
+    }
+    
+    console.log("Ghibli Image URL:", imageUrl);
+    
+    // Increment counters
+    await incrementUserGenerationCount(userId, 'ghibli', 0);
+    await trackStyleUsage('ghibli');
+    await trackPromptTerms(prompt);
+    
+    const imageData: GeneratedImage = {
+      imageUrl: imageUrl,
+      prompt,
+      style: 'ghibli',
+      aspectRatio: '16:9',
+      createdAt: Date.now(),
+      userId,
+      model: "ghibli-specialized"
+    };
+    
+    const docRef = await addDoc(collection(db, 'images'), imageData);
+    
+    toast.success("Ghibli style image generated successfully!");
+    
+    return {
+      ...imageData,
+      id: docRef.id
+    };
+  } catch (error: any) {
+    console.error("Error generating Ghibli image:", error);
+    toast.error(error.message || "Failed to generate Ghibli image");
+    throw new Error(error.message || "Failed to generate Ghibli image");
+  }
+}
+
+// Remove problematic section from generateImage function that uses the faulty model
 export async function generateImage(
   prompt: string, 
   style: string = 'photorealistic',
@@ -352,103 +473,20 @@ export async function generateImage(
       if (ghibliUsed >= ghibliLimit) {
         throw new Error(`You've reached your daily limit of ${ghibliLimit} Ghibli style images. Your quota will renew in 24 hours.`);
       }
+      
+      // For Ghibli style, use our specialized function
+      return generateGhibliImage(prompt, userId);
     }
     
     let finalPrompt = prompt;
     let clientModel = "Rooc/FLUX-Fast";
     
-    if (style === 'ghibli') {
-      finalPrompt = `Create a Studio Ghibli style animation scene with: ${prompt}. Use Ghibli's signature soft colors, detailed backgrounds, and whimsical elements.`;
-      
-      // Use the Gemini specialized model for Ghibli
-      const genAI = initGemini();
-      if (genAI) {
-        try {
-          toast.info("Generating Studio Ghibli style image with Gemini...");
-          
-          const model = genAI.getGenerativeModel({ 
-            model: "gemini-2.0-flash-exp-image-generation",
-            safetySettings: [
-              {
-                category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-              },
-              {
-                category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-              },
-              {
-                category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-                threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-              },
-            ],
-          });
-          
-          const chatSession = model.startChat({
-            history: [],
-            generationConfig: {
-              temperature: 1,
-              topP: 0.95,
-              topK: 40,
-              maxOutputTokens: 8192,
-            },
-          });
-          
-          const result = await chatSession.sendMessage(
-            `Generate a Studio Ghibli style animation scene with: ${prompt}. Use Ghibli's signature soft colors, detailed backgrounds, and whimsical elements.`
-          );
-          
-          const candidates = result.response.candidates || [];
-          for (let candidate_index = 0; candidate_index < candidates.length; candidate_index++) {
-            for (let part_index = 0; part_index < (candidates[candidate_index].content?.parts?.length || 0); part_index++) {
-              const part = candidates[candidate_index].content?.parts?.[part_index];
-              if (part && part.inlineData) {
-                try {
-                  const imageRef = ref(storage, `gemini/${userId}/${Date.now()}_ghibli.jpg`);
-                  await uploadString(imageRef, part.inlineData.data, 'base64', { contentType: part.inlineData.mimeType });
-                  const imageUrl = await getDownloadURL(imageRef);
-                  
-                  // Increment user counts
-                  await incrementUserGenerationCount(userId, style, 0);
-                  await trackStyleUsage(style);
-                  await trackPromptTerms(prompt);
-                  
-                  const imageData: GeneratedImage = {
-                    imageUrl: imageUrl,
-                    prompt,
-                    style,
-                    aspectRatio,
-                    createdAt: Date.now(),
-                    userId,
-                    model: "gemini-2.0-flash-exp-image-generation",
-                    usageTokens: 0
-                  };
-                  
-                  const docRef = await addDoc(collection(db, 'images'), imageData);
-                  toast.success("Studio Ghibli image generated successfully!");
-                  
-                  return {
-                    ...imageData,
-                    id: docRef.id
-                  };
-                } catch (err) {
-                  console.error("Error processing Gemini image:", err);
-                }
-              }
-            }
-          }
-          
-          // If we get here, we didn't find an image in the response
-          console.warn("No image found in Gemini response, falling back to standard generation");
-        } catch (error) {
-          console.error("Error generating with Gemini specialized model:", error);
-        }
-      }
-    } else if (style === 'anime') {
+    // Enhance prompts based on selected style
+    if (style === 'anime') {
       finalPrompt = `Generate an anime-style image with: ${prompt}. Use vibrant colors, distinctive anime character features, and dynamic composition.`;
+    } else {
+      finalPrompt = `Generate a ${style} style image with aspect ratio ${aspectRatio} of: ${prompt}`;
     }
-    
-    const enhancedPrompt = `Generate a ${style} style image with aspect ratio ${aspectRatio} of: ${finalPrompt}`;
     
     toast.info("Generating your image...");
     
@@ -456,6 +494,7 @@ export async function generateImage(
     let imageUrl = "";
     let tokensUsed = 0;
     
+    // Try using Gemini first
     if (genAI) {
       try {
         const model = genAI.getGenerativeModel({ 
@@ -477,7 +516,7 @@ export async function generateImage(
         });
         
         const result = await model.generateContent({
-          contents: [{ role: "user", parts: [{ text: `Generate an image: ${enhancedPrompt}` }] }],
+          contents: [{ role: "user", parts: [{ text: `Generate an image: ${finalPrompt}` }] }],
         });
         
         const response = result.response;
@@ -512,11 +551,12 @@ export async function generateImage(
       }
     }
     
+    // Fallback to Gradio if Gemini failed
     if (!imageUrl) {
       console.log("Falling back to Gradio for image generation");
       const client = await Client.connect(clientModel);
       const result = await client.predict("/predict", {
-        param_0: enhancedPrompt,
+        param_0: finalPrompt,
       });
       
       console.log("API Raw Response:", result);
@@ -850,67 +890,4 @@ export async function getUserSubscription(userId: string): Promise<UserLimit> {
     return {
       userId,
       imagesGenerated: 0,
-      imagesLimit: IMAGE_TIERS.FREE.limit,
-      totalTokensUsed: 0,
-      tokensLimit: IMAGE_TIERS.FREE.tokens,
-      tier: 'FREE',
-      lastRefresh: new Date(),
-      ghibliImagesGenerated: 0,
-      ghibliImagesLimit: IMAGE_TIERS.FREE.ghibliLimit
-    };
-  }
-  return userLimit;
-}
-
-export async function updateUserSubscription(userId: string, tier: string): Promise<boolean> {
-  try {
-    const userLimitRef = doc(db, 'userLimits', userId);
-    
-    const tierConfig = IMAGE_TIERS[tier as keyof typeof IMAGE_TIERS];
-    if (!tierConfig) {
-      throw new Error(`Invalid tier: ${tier}`);
-    }
-    
-    await updateDoc(userLimitRef, {
-      tier: tier,
-      imagesLimit: tierConfig.limit,
-      tokensLimit: tierConfig.tokens,
-      ghibliImagesLimit: tierConfig.ghibliLimit
-    });
-    
-    return true;
-  } catch (error) {
-    console.error("Error updating user subscription:", error);
-    return false;
-  }
-}
-
-export function getRemainingTimeUntilReset(lastRefresh: Date): string {
-  const now = new Date();
-  const lastRefreshDate = new Date(lastRefresh);
-  const resetTime = new Date(lastRefreshDate.getTime() + 24 * 60 * 60 * 1000); // 24 hours after last refresh
-  
-  const diffMs = resetTime.getTime() - now.getTime();
-  if (diffMs <= 0) return "Available now";
-  
-  const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  
-  if (diffHrs > 0) {
-    return `${diffHrs}h ${diffMins}m`;
-  } else {
-    return `${diffMins}m`;
-  }
-}
-
-export async function generateGhibliImage(
-  prompt: string,
-  userId: string
-): Promise<GeneratedImage> {
-  return generateImage(
-    prompt,
-    'ghibli',
-    '16:9',
-    userId
-  );
-}
+      imagesLimit: IMAGE

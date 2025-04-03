@@ -13,7 +13,8 @@ import {
   Loader2, 
   AlertCircle, 
   Sparkles,
-  ArrowRight 
+  ArrowRight,
+  Image
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -135,10 +136,10 @@ const GhibliTransformer: React.FC = () => {
       
       const imageBase64 = await imageBase64Promise;
 
-      // Initialize Google Generative AI
+      // Initialize Google Generative AI with the working model
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // Using the working model
       
       // Analyze the image
       toast.info("Analyzing your image...");
@@ -154,6 +155,7 @@ const GhibliTransformer: React.FC = () => {
     } catch (error: any) {
       console.error("Error analyzing image:", error);
       toast.error(error.message || "Failed to analyze image");
+      setAnalyzedPrompt("Failed to analyze image automatically. Please try again or write your own description.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -161,7 +163,7 @@ const GhibliTransformer: React.FC = () => {
 
   const generateGhibliStyleImage = async () => {
     if (!analyzedPrompt || !currentUser) {
-      toast.error('Please analyze an image first');
+      toast.error('Please analyze an image or provide a description first');
       return;
     }
 
@@ -170,6 +172,7 @@ const GhibliTransformer: React.FC = () => {
     try {
       toast.info("Generating Ghibli style image...");
       
+      // Use our specialized Ghibli image generator
       const result = await generateGhibliImage(analyzedPrompt, currentUser.uid);
       setGeneratedImageUrl(result.imageUrl);
       await loadUserLimits(); // Refresh limits
@@ -412,30 +415,33 @@ const GhibliTransformer: React.FC = () => {
               <CardDescription>See the magic of Ghibli transformations</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-2">
-                  <div className="relative aspect-video bg-slate-700/30 rounded-md overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                      <span className="text-xs">Example 1</span>
+                  <div className="relative aspect-video bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-md overflow-hidden flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Image className="h-8 w-8 text-gray-400/50" />
                     </div>
+                    <p className="text-xs text-gray-400 relative z-10">Ghibli-style landscape</p>
                   </div>
-                  <p className="text-xs text-gray-400">City landscape transformed into Ghibli style</p>
+                  <p className="text-xs text-gray-400">Landscapes transform into magical Ghibli worlds</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <div className="relative aspect-video bg-slate-700/30 rounded-md overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                      <span className="text-xs">Example 2</span>
+                  <div className="relative aspect-video bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-md overflow-hidden flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Image className="h-8 w-8 text-gray-400/50" />
                     </div>
+                    <p className="text-xs text-gray-400 relative z-10">Ghibli-style character</p>
                   </div>
-                  <p className="text-xs text-gray-400">Portrait transformed with whimsical Ghibli elements</p>
+                  <p className="text-xs text-gray-400">People transform into Ghibli-style characters</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <div className="relative aspect-video bg-slate-700/30 rounded-md overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                      <span className="text-xs">Example 3</span>
+                  <div className="relative aspect-video bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-md overflow-hidden flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Image className="h-8 w-8 text-gray-400/50" />
                     </div>
+                    <p className="text-xs text-gray-400 relative z-10">Ghibli creatures</p>
                   </div>
-                  <p className="text-xs text-gray-400">Nature scene with Ghibli's magical atmosphere</p>
+                  <p className="text-xs text-gray-400">Animals transform with Ghibli's whimsical style</p>
                 </div>
               </div>
             </CardContent>
