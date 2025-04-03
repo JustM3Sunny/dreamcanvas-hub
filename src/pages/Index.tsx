@@ -1,11 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, Loader2, Sparkles, Zap, Upload, Image as ImageIcon, RefreshCw, ArrowRight, Heart } from 'lucide-react';
+import { 
+  AlertCircle, 
+  Loader2, 
+  Sparkles, 
+  Zap, 
+  Upload, 
+  Image as ImageIcon, 
+  RefreshCw, 
+  ArrowRight, 
+  Heart, 
+  Palette,
+  Lightbulb
+} from 'lucide-react';
 import { 
   generateImage, 
   enhancePrompt, 
@@ -107,8 +118,6 @@ const Index = () => {
     try {
       let image;
       
-      // If using Google Gemini, we would use their API here
-      // This is simplified for demo purposes
       if (useGemini) {
         toast.info("Using Google Gemini API for generation");
         // For now, we'll use our existing service but in real implementation
