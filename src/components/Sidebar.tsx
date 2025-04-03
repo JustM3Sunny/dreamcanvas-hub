@@ -30,7 +30,6 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Image, label: 'Gallery', path: '/gallery' },
-    { icon: GalleryVertical, label: 'Ghibli Studio', path: '/ghibli' },
     { icon: Palette, label: 'Image Styles', path: '/styles' },
     { icon: CreditCard, label: 'Pricing', path: '/pricing' },
     { icon: FileText, label: 'Templates', path: '/templates' },

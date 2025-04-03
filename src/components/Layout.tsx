@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Menu, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -58,15 +59,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <main className="flex-1">
           <div className="p-4 md:p-6 max-w-7xl mx-auto animate-fade-in">
             {currentUser && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setSidebarOpen(!sidebarOpen)} 
-                className="mb-4 text-white hover:bg-white/10"
-              >
-                {sidebarOpen ? <PanelLeft /> : <Menu />}
-                <span className="sr-only">Toggle sidebar</span>
-              </Button>
+              <div className="flex items-center justify-between mb-6">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setSidebarOpen(!sidebarOpen)} 
+                  className="text-white hover:bg-white/10"
+                >
+                  {sidebarOpen ? <PanelLeft /> : <Menu />}
+                  <span className="sr-only">Toggle sidebar</span>
+                </Button>
+                
+                <div className="flex items-center space-x-3">
+                  <Link to="/ghibli" className="text-sm text-indigo-400 hover:text-indigo-300 transition">
+                    Ghibli Transformer
+                  </Link>
+                  <Link to="/gallery" className="text-sm text-gray-400 hover:text-white transition">
+                    Gallery
+                  </Link>
+                </div>
+              </div>
             )}
             {children}
           </div>
