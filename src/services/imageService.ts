@@ -893,4 +893,24 @@ export function getRemainingTimeUntilReset(lastRefresh: Date): string {
   const diffMs = resetTime.getTime() - now.getTime();
   if (diffMs <= 0) return "Available now";
   
-  const diffHrs = Math.floor(diffMs / (100
+  const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (diffHrs > 0) {
+    return `${diffHrs}h ${diffMins}m`;
+  } else {
+    return `${diffMins}m`;
+  }
+}
+
+export async function generateGhibliImage(
+  prompt: string,
+  userId: string
+): Promise<GeneratedImage> {
+  return generateImage(
+    prompt,
+    'ghibli',
+    '16:9',
+    userId
+  );
+}
