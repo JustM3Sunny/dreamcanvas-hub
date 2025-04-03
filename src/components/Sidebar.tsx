@@ -11,7 +11,6 @@ import {
   MessageSquare,
   FileText,
   LifeBuoy,
-  Mountain,
   CreditCard,
   X
 } from 'lucide-react';

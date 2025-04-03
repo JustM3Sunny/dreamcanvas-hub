@@ -43,9 +43,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceSt
         return;
       }
       
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setUploadError('Image size cannot exceed 5MB');
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError('Image size cannot exceed 10MB');
         return;
       }
       
@@ -84,16 +84,78 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceSt
     
     setIsAnalyzing(true);
     try {
-      const result = await generateFromImage(selectedImage, currentUser.uid, {
-        style: forceStyle || style,
-        enhancePrompt: true
-      });
-      setAnalyzedPrompt(result.analyzedPrompt);
-      onImageGenerated(result.image.imageUrl, result.analyzedPrompt);
-      toast.success('Image analyzed and similar image generated!');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to analyze image');
-      console.error("Error analyzing image:", error);
+      // Enhanced error handling for image analysis
+      try {
+        const result = await generateFromImage(selectedImage, currentUser.uid, {
+          style: forceStyle || style,
+          enhancePrompt: true
+        });
+        
+        setAnalyzedPrompt(result.analyzedPrompt);
+        onImageGenerated(result.image.imageUrl, result.analyzedPrompt);
+        toast.success('Image analyzed and similar image generated!');
+      } catch (error: any) {
+        console.error("Error in image transformation:", error);
+        toast.error(`Image analysis failed: ${error.message || 'Unknown error'}`);
+        
+        // Try again with a different approach if specific error occurs
+        if (error.message.includes("Failed to convert image") || error.message.includes("Failed to analyze")) {
+          toast.info("Trying alternative method for processing your image...");
+          
+          // Use lower resolution or different format for processing
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (ctx && previewUrl) {
+            const img = new Image();
+            img.onload = async () => {
+              // Resize image to manageable dimensions if too large
+              const maxDimension = 1024;
+              let width = img.width;
+              let height = img.height;
+              
+              if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                  height = Math.floor(height * (maxDimension / width));
+                  width = maxDimension;
+                } else {
+                  width = Math.floor(width * (maxDimension / height));
+                  height = maxDimension;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              ctx.drawImage(img, 0, 0, width, height);
+              
+              // Convert to more compatible format
+              canvas.toBlob(async (blob) => {
+                if (blob && currentUser) {
+                  const optimizedFile = new File([blob], "optimized-image.jpeg", { type: "image/jpeg" });
+                  
+                  try {
+                    const result = await generateFromImage(optimizedFile, currentUser.uid, {
+                      style: forceStyle || style,
+                      enhancePrompt: true
+                    });
+                    
+                    setAnalyzedPrompt(result.analyzedPrompt);
+                    onImageGenerated(result.image.imageUrl, result.analyzedPrompt);
+                    toast.success('Image analyzed with alternative method!');
+                  } catch (secondError) {
+                    console.error("Second attempt failed:", secondError);
+                    toast.error("All analysis methods failed. Please try a different image.");
+                  }
+                }
+              }, 'image/jpeg', 0.85);
+            };
+            img.src = previewUrl;
+          }
+        }
+      }
+    } catch (finalError: any) {
+      console.error("Fatal error in image processing:", finalError);
+      toast.error('Failed to process image after multiple attempts');
     } finally {
       setIsAnalyzing(false);
     }
@@ -136,7 +198,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceSt
                     Click to upload an image for analysis
                   </p>
                   <p className="text-gray-500 text-sm text-center">
-                    JPG, PNG, or GIF (max 5MB)
+                    JPG, PNG, or GIF (max 10MB)
                   </p>
                 </>
               )}
@@ -183,7 +245,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceSt
                     <SelectItem value="anime">Anime</SelectItem>
                     <SelectItem value="3d-render">3D Render</SelectItem>
                     <SelectItem value="pixel-art">Pixel Art</SelectItem>
-                    <SelectItem value="ghibli">Studio Ghibli</SelectItem>
+                    <SelectItem value="watercolor">Watercolor</SelectItem>
+                    <SelectItem value="oil-painting">Oil Painting</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -210,7 +273,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceSt
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Analyzing...
                 </>
-              ) : analyzedPrompt ? 'Generate Again' : `Analyze & Generate ${forceStyle ? forceStyle + ' ' : ''}Image`}
+              ) : analyzedPrompt ? 'Generate Again' : `Analyze & Transform Image`}
             </Button>
           </CardContent>
         </Card>

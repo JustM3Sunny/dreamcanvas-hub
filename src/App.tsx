@@ -12,7 +12,6 @@ import NotFound from "./pages/NotFound";
 import Styles from "./pages/Styles";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
-import GhibliGenerator from "./pages/GhibliGenerator";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Features from "./pages/Features";
@@ -37,7 +36,6 @@ const App = () => (
             <Route path="/styles" element={<Layout><Styles /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
             <Route path="/admin" element={<Layout><Admin /></Layout>} />
-            <Route path="/ghibli" element={<Layout><GhibliGenerator /></Layout>} />
             <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
             <Route path="/features" element={<Layout><Features /></Layout>} />
             <Route path="/templates" element={<Layout><Templates /></Layout>} />

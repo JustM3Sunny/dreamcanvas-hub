@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../contexts/AuthContext';
@@ -53,25 +53,25 @@ const STYLE_EXAMPLES = [
     examples: ['Anime characters', 'Anime backgrounds', 'Manga style']
   },
   {
-    name: 'Ghibli',
-    description: "Artwork inspired by Studio Ghibli's distinctive animation style",
-    tier: 'PRO',
-    imageUrl: 'https://images.unsplash.com/photo-1638272181967-78d9f9b3b3e6',
-    examples: ['Ghibli landscapes', 'Ghibli characters', 'Whimsical scenes']
-  },
-  {
     name: 'Watercolor',
     description: 'Digital art that mimics watercolor painting techniques',
-    tier: 'UNLIMITED',
+    tier: 'PRO',
     imageUrl: 'https://images.unsplash.com/photo-1608197456986-c2d7894a7076',
     examples: ['Watercolor landscapes', 'Watercolor portraits', 'Abstract watercolors']
   },
   {
     name: 'Oil Painting',
     description: 'Digital art that mimics traditional oil painting',
-    tier: 'UNLIMITED',
+    tier: 'PRO',
     imageUrl: 'https://images.unsplash.com/photo-1579783928621-7a13d66a62b1',
     examples: ['Classical style paintings', 'Modern oil paintings', 'Oil painting portraits']
+  },
+  {
+    name: 'Cyberpunk',
+    description: 'Futuristic dystopian style with neon lights and urban environments',
+    tier: 'UNLIMITED',
+    imageUrl: 'https://images.unsplash.com/photo-1545164415-04404788d98b',
+    examples: ['Futuristic cityscapes', 'Cybernetic characters', 'Neon-lit scenes']
   }
 ];
 
@@ -122,7 +122,7 @@ const Styles = () => {
         <div className="text-center max-w-3xl mx-auto mb-10">
           <h1 className="text-4xl font-bold mb-4 text-white">Image Generation Styles</h1>
           <p className="text-xl text-gray-300">
-            Explore the diverse range of artistic styles available for generating images with Imagicaaa
+            Explore the diverse range of artistic styles available for generating images
           </p>
           
           {currentUser ? (
@@ -148,6 +148,48 @@ const Styles = () => {
               </Link>
             </div>
           )}
+        </div>
+
+        {/* Advanced Style Features */}
+        <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 shadow-lg transform transition-all hover:scale-[1.02]">
+            <CardHeader>
+              <CardTitle className="text-white">Image to Image Transformation</CardTitle>
+              <CardDescription className="text-gray-300">Upload your own images for AI to transform</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-400 mb-4">Upload any image and convert it to any of our available artistic styles with enhanced precision.</p>
+              <Link to="/styles">
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">Try Now</Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 shadow-lg transform transition-all hover:scale-[1.02]">
+            <CardHeader>
+              <CardTitle className="text-white">Style Mixing & Blending</CardTitle>
+              <CardDescription className="text-gray-300">Combine multiple styles in one image</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-400 mb-4">Create unique artwork by blending different artistic styles together with adjustable strength.</p>
+              <Button className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={!isStyleAvailable("PRO")}>
+                {isStyleAvailable("PRO") ? "Try Now" : "PRO Plan Required"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 shadow-lg transform transition-all hover:scale-[1.02]">
+            <CardHeader>
+              <CardTitle className="text-white">Custom Style Training</CardTitle>
+              <CardDescription className="text-gray-300">Create your own unique style</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-400 mb-4">Upload reference images to train a custom style that matches your personal aesthetic.</p>
+              <Button className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={!isStyleAvailable("UNLIMITED")}>
+                {isStyleAvailable("UNLIMITED") ? "Try Now" : "UNLIMITED Plan Required"}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
