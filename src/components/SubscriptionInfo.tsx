@@ -40,12 +40,6 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
   // Calculate time until quota resets
   const timeUntilReset = getRemainingTimeUntilReset(userLimit.lastRefresh);
   
-  // Calculate Ghibli progress if applicable
-  const hasGhibliLimit = (userLimit.ghibliImagesLimit ?? 0) > 0;
-  const ghibliPercentage = hasGhibliLimit 
-    ? ((userLimit.ghibliImagesGenerated ?? 0) / (userLimit.ghibliImagesLimit ?? 1)) * 100
-    : 0;
-  
   return (
     <div className="bg-imaginexus-darker rounded-xl border border-white/10 p-5 shadow-lg shadow-primary/5">
       <div className="flex justify-between items-center mb-4">
@@ -76,28 +70,6 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ userLimit }) => {
           indicatorClassName={getProgressColor()}
         />
       </div>
-      
-      {hasGhibliLimit && (
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-1.5 text-sm">
-            <span className="text-gray-300">Ghibli style limit</span>
-            <span className="text-white font-medium">
-              {userLimit.ghibliImagesGenerated ?? 0} / {userLimit.ghibliImagesLimit}
-            </span>
-          </div>
-          <Progress 
-            value={ghibliPercentage} 
-            className="h-2 bg-white/5" 
-            indicatorClassName="bg-indigo-500"
-          />
-          <div className="mt-2">
-            <Link to="/ghibli" className="text-xs text-primary hover:underline inline-flex items-center">
-              <Sparkles className="mr-1 h-3 w-3" />
-              Try our dedicated Ghibli Generator
-            </Link>
-          </div>
-        </div>
-      )}
       
       {userLimit.imagesGenerated >= userLimit.imagesLimit ? (
         <div className="text-sm">

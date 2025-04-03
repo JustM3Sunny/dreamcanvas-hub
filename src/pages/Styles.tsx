@@ -159,7 +159,7 @@ const Styles = () => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-400 mb-4">Upload any image and convert it to any of our available artistic styles with enhanced precision.</p>
-              <Link to="/styles">
+              <Link to="/">
                 <Button className="w-full bg-indigo-600 hover:bg-indigo-700">Try Now</Button>
               </Link>
             </CardContent>

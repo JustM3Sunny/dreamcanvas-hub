@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, X, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react';
+import { Upload, X, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateFromImage } from '../services/imageService';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
 
 interface ImageUploaderProps {
@@ -84,9 +83,20 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceSt
     
     setIsAnalyzing(true);
     try {
+      // Add a timestamp to the filename to avoid CORS issues with cached images
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(7);
+      const newFileName = `image-${timestamp}-${randomString}.${selectedImage.name.split('.').pop()}`;
+      
+      // Create a new File object with the modified name
+      const renamedFile = new File([selectedImage], newFileName, { 
+        type: selectedImage.type,
+        lastModified: selectedImage.lastModified 
+      });
+      
       // Enhanced error handling for image analysis
       try {
-        const result = await generateFromImage(selectedImage, currentUser.uid, {
+        const result = await generateFromImage(renamedFile, currentUser.uid, {
           style: forceStyle || style,
           enhancePrompt: true
         });
@@ -129,9 +139,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceSt
               ctx.drawImage(img, 0, 0, width, height);
               
               // Convert to more compatible format
-              canvas.toBlob(async (blob) => {
+              try {
+                const blob = await new Promise<Blob | null>((resolve) => {
+                  canvas.toBlob(resolve, 'image/jpeg', 0.85);
+                });
+                
                 if (blob && currentUser) {
-                  const optimizedFile = new File([blob], "optimized-image.jpeg", { type: "image/jpeg" });
+                  const timestamp = Date.now();
+                  const optimizedFile = new File([blob], `optimized-image-${timestamp}.jpeg`, { type: "image/jpeg" });
                   
                   try {
                     const result = await generateFromImage(optimizedFile, currentUser.uid, {
@@ -147,7 +162,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageGenerated, forceSt
                     toast.error("All analysis methods failed. Please try a different image.");
                   }
                 }
-              }, 'image/jpeg', 0.85);
+              } catch (blobError) {
+                console.error("Error creating blob:", blobError);
+                toast.error("Failed to process image. Please try a different one.");
+              }
             };
             img.src = previewUrl;
           }

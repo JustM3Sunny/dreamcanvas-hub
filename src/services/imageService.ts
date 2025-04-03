@@ -1,4 +1,3 @@
-
 import { Client } from "@gradio/client";
 import { toast } from "sonner";
 import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage';
@@ -248,15 +247,18 @@ async function trackPromptTerms(prompt: string): Promise<void> {
       const data = promptDoc.data() as Record<string, number>;
       const updatedData = { ...data };
       
+      // Sanitize words to ensure they don't contain invalid characters
       words.forEach(word => {
-        updatedData[word] = (updatedData[word] || 0) + 1;
+        const sanitizedWord = word.replace(/[~*/\[\]]/g, '_');
+        updatedData[sanitizedWord] = (updatedData[sanitizedWord] || 0) + 1;
       });
       
       await updateDoc(promptRef, updatedData);
     } else {
       const initialData: Record<string, number> = {};
       words.forEach(word => {
-        initialData[word] = 1;
+        const sanitizedWord = word.replace(/[~*/\[\]]/g, '_');
+        initialData[sanitizedWord] = 1;
       });
       
       await setDoc(promptRef, initialData);
@@ -570,8 +572,12 @@ export async function generateFromImage(
       }
     }
     
-    // Upload the image
-    const imageRef = ref(storage, `temp/${userId}/${Date.now()}_${optimizedFile.name}`);
+    // Upload the image with a more unique name to avoid conflicts
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const safeFilename = optimizedFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const imageRef = ref(storage, `temp/${userId}/${timestamp}_${randomId}_${safeFilename}`);
+    
     await uploadBytes(imageRef, optimizedFile);
     const imageUrl = await getDownloadURL(imageRef);
     
@@ -859,7 +865,6 @@ export function getRemainingTimeUntilReset(lastRefresh: Date): string {
   return `${diffHrs}h ${diffMins}m`;
 }
 
-// Create a new function for advanced image manipulations
 export async function advancedImageTransformation(
   imageFile: File,
   userId: string,
@@ -881,9 +886,12 @@ export async function advancedImageTransformation(
       throw new Error(`You've reached your daily limit of ${userLimit.imagesLimit} images. Your quota will renew in 24 hours.`);
     }
     
-    // Upload original image
-    toast.info("Processing your image...");
-    const imageRef = ref(storage, `advanced/${userId}/${Date.now()}_${imageFile.name}`);
+    // Upload original image with a unique name
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const safeFilename = imageFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const imageRef = ref(storage, `advanced/${userId}/${timestamp}_${randomId}_${safeFilename}`);
+    
     await uploadBytes(imageRef, imageFile);
     const imageUrl = await getDownloadURL(imageRef);
     
