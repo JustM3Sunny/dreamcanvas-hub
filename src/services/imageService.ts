@@ -890,4 +890,51 @@ export async function getUserSubscription(userId: string): Promise<UserLimit> {
     return {
       userId,
       imagesGenerated: 0,
-      imagesLimit: IMAGE
+      imagesLimit: IMAGE_TIERS.FREE.limit,
+      totalTokensUsed: 0,
+      tokensLimit: IMAGE_TIERS.FREE.tokens,
+      tier: 'FREE',
+      lastRefresh: new Date(),
+      ghibliImagesGenerated: 0,
+      ghibliImagesLimit: IMAGE_TIERS.FREE.ghibliLimit
+    };
+  }
+  return userLimit;
+}
+
+export async function updateUserSubscription(userId: string, tier: string): Promise<boolean> {
+  try {
+    const userLimitRef = doc(db, 'userLimits', userId);
+    
+    const tierConfig = IMAGE_TIERS[tier as keyof typeof IMAGE_TIERS];
+    if (!tierConfig) {
+      throw new Error(`Invalid tier: ${tier}`);
+    }
+    
+    await updateDoc(userLimitRef, {
+      tier: tier,
+      imagesLimit: tierConfig.limit,
+      tokensLimit: tierConfig.tokens,
+      ghibliImagesLimit: tierConfig.ghibliLimit
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating user subscription:", error);
+    return false;
+  }
+}
+
+export function getRemainingTimeUntilReset(lastRefresh: Date): string {
+  const now = new Date();
+  const lastRefreshDate = new Date(lastRefresh);
+  const resetTime = new Date(lastRefreshDate.getTime() + 24 * 60 * 60 * 1000); // 24 hours after last refresh
+  
+  const diffMs = resetTime.getTime() - now.getTime();
+  if (diffMs <= 0) return "Available now";
+  
+  const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  
+  return `${diffHrs}h ${diffMins}m`;
+}
